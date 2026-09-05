@@ -67,6 +67,24 @@
             });
         </script>
 
+        <!-- Top category cards on the homepage open the jobs page with the selected category applied. -->
+        <script>
+            $(function () {
+                var topCategoryMap = @json(\App\Models\Jobcategory::where('is_top_category', true)->pluck('id', 'name'));
+
+                $('.our-services .single-services').each(function () {
+                    var $card = $(this);
+                    var categoryName = $.trim($card.find('.services-cap h5').text());
+                    var categoryId = topCategoryMap[categoryName];
+                    var $link = $card.closest('a');
+
+                    if (categoryId && $link.length) {
+                        $link.attr('href', '/jobs?job_category=' + encodeURIComponent(categoryId));
+                    }
+                });
+            });
+        </script>
+
         <!-- The jobs page uses a normal GET filter form and regular pagination, not AJAX. -->
         <script>
             $(function () {
