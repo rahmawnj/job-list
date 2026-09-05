@@ -29,15 +29,12 @@ class JobController extends Controller
             $length = (int) $request->input('length', 10);
             $search = trim((string) $request->input('search.value', ''));
 
-            // Total record (mengikuti default scope model, soft delete sudah otomatis)
             $totalRecords = Job::count();
 
-            // Query dasar + relasi
             $query = Job::query()
                 ->with(['company', 'jobcategory'])
                 ->withCount('applyjobs');
 
-            // Global search
             if ($search !== '') {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
@@ -54,7 +51,6 @@ class JobController extends Controller
 
             $recordsFiltered = (clone $query)->count();
 
-            // Ordering dari DataTables (order.0.column & order.0.dir)
             $order = $request->input('order.0');
             if ($order && isset($order['column'], $order['dir'])) {
                 $columns = ['id', 'image', 'title', 'company_name', 'jobcategory_name', 'apply_count', 'action'];
@@ -116,18 +112,12 @@ class JobController extends Controller
             ]);
         }
 
-        // Bukan request DataTables: render halaman seperti biasa.
         return view('dashboard.jobs.index', [
             'title' => 'Jobs',
             'jobs' => Job::all()
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         return view('dashboard.jobs.create', [
@@ -138,12 +128,6 @@ class JobController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -174,12 +158,6 @@ class JobController extends Controller
         return redirect('/dashboard/jobs')->with('success', 'New Job has been added');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Job  $job
-     * @return \Illuminate\Http\Response
-     */
     public function show(Job $job)
     {
         return view('dashboard.jobs.show', [
@@ -188,12 +166,6 @@ class JobController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Job  $job
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Job $job)
     {
         return view('dashboard.jobs.edit', [
@@ -205,13 +177,6 @@ class JobController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Job  $job
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Job $job)
     {
         $request->validate([
@@ -223,12 +188,14 @@ class JobController extends Controller
             'status' => 'required',
             'logo' => 'image|file|max:2048'
         ]);
+
         if ($request->file('image')) {
             if ($job->image) {
                 Storage::delete([$job->image]);
             }
             $validatedData['image'] = $request->file('image')->store('uploads/image/jobs');
         }
+
         $validatedData['company_id'] = $request->company_id;
         $validatedData['jobcategory_id'] = $request->jobcategory_id;
         $validatedData['location_id'] = $request->location_id;
@@ -245,12 +212,6 @@ class JobController extends Controller
         return redirect('/dashboard/jobs')->with('success', 'Job has been Updated');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Job  $job
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Job $job)
     {
         Storage::delete([$job->image]);
@@ -275,7 +236,7 @@ class JobController extends Controller
 
     public function apply_jobs(Job $job)
     {
-       $applyjobs =  ApplyJob::where('job_id', $job->id)->orderBy('created_at', 'desc')->get();
+       $applyjobs = ApplyJob::where('job_id', $job->id)->orderBy('created_at', 'desc')->get();
 
         return view('dashboard.jobs.apply', [
             'title' => 'Jobs',
@@ -288,7 +249,6 @@ class JobController extends Controller
     {
         $apply_job = ApplyJob::findOrFail($apply_job_id);
 
-        // Ubah status read menjadi 1
         $apply_job->update(['read' => 1]);
 
         $title = 'Jobs';
@@ -298,7 +258,6 @@ class JobController extends Controller
     public function update_apply_job_detail(Request $request, ApplyJob $apply_job)
     {
         $request->validate([
-            // 'note' => 'required|string',
             'status' => 'required|in:pending,approved,rejected',
         ]);
 
@@ -317,7 +276,7 @@ class JobController extends Controller
         return view('dashboard.jobs.candidates', [
             'title' => 'Recruitment Process',
             'job' => $job,
-            'jobCandidates' => $job->jobCandidates()->with('candidate')->orderBy('id', 'desc')->get(),
+            'jobCandidates' => $job->jobCandidates()->with(['candidate', 'milestones'])->orderBy('id', 'desc')->get(),
             'candidateOptions' => Candidate::whereNotIn('id', $usedCandidateIds)->orderBy('name')->get(),
             'usedCandidateIds' => $usedCandidateIds,
         ]);
