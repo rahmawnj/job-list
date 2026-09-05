@@ -203,10 +203,15 @@
     width: 100%;
 }
 
-.apply-actions .apply-btn2,
-.apply-actions .job-share-btn {
-    flex: 1 1 0;
+.apply-actions .apply-btn2 {
+    flex: 1 1 auto;
     min-width: 0;
+}
+
+.apply-actions .job-share-btn {
+    flex: 0 0 58px;
+    width: 58px;
+    min-width: 58px;
 }
 
 .apply-actions .apply-btn2 .btn,
@@ -221,7 +226,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 20px;
+    padding: 0;
     border: 1.5px solid #2a93d5;
     background: #fff;
     color: #2a93d5;
@@ -329,6 +334,12 @@
         gap: 8px;
     }
 
+    .apply-actions .job-share-btn {
+        flex-basis: 52px;
+        width: 52px;
+        min-width: 52px;
+    }
+
     .apply-actions .apply-btn2 .btn,
     .job-share-btn {
         height: 52px;
@@ -337,18 +348,32 @@
         font-size: 13px;
     }
 
+    .job-share-btn {
+        padding: 0;
+    }
+
     .job-share-btn i {
         font-size: 16px;
     }
 }
 
 @media (max-width: 360px) {
+    .apply-actions .job-share-btn {
+        flex-basis: 48px;
+        width: 48px;
+        min-width: 48px;
+    }
+
     .apply-actions .apply-btn2 .btn,
     .job-share-btn {
         height: 48px;
         min-height: 48px;
         padding: 0 8px;
         font-size: 12px;
+    }
+
+    .job-share-btn {
+        padding: 0;
     }
 
     .job-share-btn i {
