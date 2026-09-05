@@ -1,0 +1,293 @@
+@extends('homepage._layout.main')
+
+@push('meta')
+<meta name="description" content="{{\App\Models\Job::find($id)->title}}">
+@endpush
+
+@section('container')
+@once
+<style>
+/* Match the site’s standard page hero styling so the title looks consistent with other pages */
+.slider-height2 {
+    min-height: 450px !important;
+}
+
+.hero-cap h2 {
+    color: #fff;
+    font-size: 50px;
+    font-weight: 700;
+    text-transform: capitalize;
+    line-height: 1.2;
+    margin: 0;
+    letter-spacing: 0;
+}
+
+@media (max-width: 767px) {
+    .hero-cap h2 {
+        font-size: 40px;
+    }
+}
+
+/* Card Job Single Bagian Atas */
+.job-post-company .single-job-items {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: #fff;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 24px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.03);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.job-post-company .single-job-items:hover {
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.06);
+}
+
+.job-post-company .job-items {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.job-post-company .company-img {
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+    border: 1px solid rgba(42, 147, 213, 0.12);
+    overflow: hidden;
+    position: relative;
+}
+
+.job-post-company .company-img img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.job-post-company .job-tittle {
+    flex: 1;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+
+.job-post-company .job-tittle h4 {
+    margin: 0 0 10px;
+    font-size: clamp(20px, 2vw, 26px);
+    font-weight: 700;
+    color: #1e214e;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+.job-post-company .job-tittle ul {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: #64748b;
+    font-size: 15px;
+}
+
+.job-post-company .job-tittle ul li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.job-post-company .job-tittle ul li i {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+/* Kotak Detail Konten (Deskripsi & Requirement) */
+.job-post-details {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    padding: 30px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.03);
+}
+
+.small-section-tittle h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e214e;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+}
+
+/* Sidebar Job Overview ala Modern Card */
+.post-details3 {
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.03);
+}
+
+.post-details3 ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+}
+
+.post-details3 ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: #64748b;
+}
+
+.post-details3 ul li:last-child {
+    border-bottom: none;
+}
+
+.post-details3 ul li span {
+    font-weight: 600;
+    color: #1e214e;
+}
+
+/* Tombol Apply Custom Youthful */
+.apply-btn2 .btn {
+    display: block;
+    width: 100%;
+    background-color: #2a93d5 !important;
+    color: #fff !important;
+    font-weight: 700;
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(42, 147, 213, 0.25);
+    transition: all 0.25s ease;
+    border: none;
+}
+
+.apply-btn2 .btn:hover {
+    background-color: #1f82c4 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(42, 147, 213, 0.35);
+}
+
+/* Responsive Mobile Styles */
+@media (max-width: 767px) {
+    .job-post-company .single-job-items,
+    .job-post-details,
+    .post-details3 {
+        padding: 18px;
+    }
+    .job-post-company .company-img {
+        width: 65px;
+        min-width: 65px;
+        height: 65px;
+        border-radius: 16px;
+    }
+    .job-post-company .company-img img {
+        width: 48px;
+        height: 48px;
+    }
+    .job-post-company .job-tittle {
+        padding-left: 14px;
+    }
+    .job-post-company .job-tittle h4 {
+        font-size: 17px;
+    }
+    .job-post-company .job-tittle ul {
+        font-size: 13px;
+        gap: 6px 12px;
+    }
+}
+</style>
+@endonce
+
+<div class="slider-area">
+    <div class="single-slider section-overly slider-height2 d-flex align-items-center" data-background="{{asset('storage/' . App\Models\Content::where('name', 'slider_background')->first()->description)}}">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="hero-cap text-center">
+                        <h2>{{App\Models\Job::find($id)->jobcategory->name}}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="job-post-company pt-100 pb-100">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-xl-7 col-lg-8">
+                <div class="single-job-items mb-30">
+                    <div class="job-items align-items-center">
+                        <div class="company-img">
+                            <img src="{{asset('storage/' . App\Models\Job::find($id)->image)}}" alt="Company Logo">
+                        </div>
+                        <div class="job-tittle">
+                            <h4>{{App\Models\Job::find($id)->title}}</h4>
+                            <ul>
+                                <li>{{App\Models\Job::find($id)->jobcategory->name}}</li>
+                                <li><i class="fas fa-map-marker-alt"></i> {{App\Models\Job::find($id)->location->name}}</li>
+                                <li>{{App\Models\Job::find($id)->salary}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="job-post-details">
+                    <div class="post-details1 mb-45">
+                        <div class="small-section-tittle">
+                            <h4>Job Description</h4>
+                        </div>
+                        {!! App\Models\Job::find($id)->description !!}
+                    </div>
+                   
+                    <div class="post-details2">
+                        <div class="small-section-tittle">
+                            <h4>Requirement, Qualification & Experience</h4>
+                        </div>
+                        {!! App\Models\Job::find($id)->requirement !!}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-4 mt-4 mt-lg-0">
+                <div class="post-details3 mb-30">
+                    <div class="small-section-tittle">
+                        <h4>Job Overview</h4>
+                    </div>
+                    <ul>
+                        <li>Posted date : <span>{{\Carbon\Carbon::parse(App\Models\Job::find($id)->created_at)->format('d M Y')}}</span></li>
+                        <li>Location : <span>{{App\Models\Job::find($id)->location->name}}</span></li>
+                        <li>Total Position : <span>{{App\Models\Job::find($id)->total_position}}</span></li>
+                        <li>Job Type : <span>{{ucwords(str_replace("_", " ", App\Models\Job::find($id)->type))}}</span></li>
+                        <li>Salary : <span>{{App\Models\Job::find($id)->salary}}</span></li>
+                    </ul>
+                    <div class="apply-btn2">
+                        <a href="{{ route('apply_job', $id) }}" class="btn">Apply Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
