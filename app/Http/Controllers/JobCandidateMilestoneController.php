@@ -122,6 +122,7 @@ class JobCandidateMilestoneController extends Controller
 
         return redirect()
             ->route('admin.job.candidates', $job->id)
-            ->with('success', 'Milestone updated.');
+            ->with('success', 'Milestone updated successfully.')
+            ->with('open_milestone_modal', $jobCandidate->id);
     }
 }
