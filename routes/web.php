@@ -26,22 +26,44 @@ use App\Http\Controllers\ApplyJobController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\JobCandidateMilestoneController;
 
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
 function getUserIpAddr()
 {
     $ip = $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '127.0.0.1'));
-    if (is_string($ip) && str_contains($ip, ',')) $ip = trim(explode(',', $ip)[0]);
+
+    if (is_string($ip) && str_contains($ip, ',')) {
+        $ip = trim(explode(',', $ip)[0]);
+    }
+
     return $ip;
 }
 
 Route::get('/storage/{path}', function ($path) {
     $file = storage_path('app/public/' . $path);
-    if (! File::exists($file)) abort(404);
+
+    if (! File::exists($file)) {
+        abort(404);
+    }
+
     return Response::file($file);
 })->where('path', '.*');
 
 function insertVisitor($ip_address, $page)
 {
-    Visitor::create(['ip_address' => $ip_address, 'page' => $page]);
+    Visitor::create([
+        'ip_address' => $ip_address,
+        'page' => $page,
+    ]);
 }
 
 function activeJobsQuery()
@@ -55,54 +77,23 @@ function activeJobsQuery()
 Route::get('/', function(){
     insertVisitor(getUserIpAddr(), '/home');
     $jobs = activeJobsQuery();
-    $topCategories = Jobcategory::where('is_top_category', true)->whereNotNull('logo')->get(['id', 'name']);
-    $html = view('homepage.index', ['jobs' => $jobs->paginate(5), 'count_job' => $jobs->count()])->render();
 
-    // Top Categories use normal server-side links, no JavaScript.
-    $categoryIndex = 0;
-    $html = preg_replace_callback('/<a href="\/jobs" class="text-decoration-none">/', function ($match) use (&$categoryIndex, $topCategories) {
-        $category = $topCategories->values()->get($categoryIndex++);
-        if (!$category) return $match[0];
-        return '<a href="/jobs?job_category=' . urlencode($category->id) . '" class="text-decoration-none">';
-    }, $html);
-
-    // Home search uses a normal GET request handled by PHP.
-    $html = str_replace('<form action="/jobs" method="post">', '<form action="/jobs" method="GET">', $html);
-
-    // Home hiring filters are submitted together with one PHP GET button.
-    $html = str_replace(
-        '<div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">',
-        '<form action="/jobs" method="GET"><div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">',
-        $html
-    );
-    $html = str_replace(
-        '<select class="job-filter-select" data-picker id="job_category" name="select">',
-        '<select class="job-filter-select" data-picker id="job_category" name="job_category">',
-        $html
-    );
-    $html = str_replace(
-        '<select class="job-filter-select" data-picker id="location" name="select">',
-        '<select class="job-filter-select" data-picker id="location" name="location">',
-        $html
-    );
-
-    // Insert before the job data section; this is not dependent on literal newline characters.
-    $homeButton = '<div class="text-center mt-3"><button type="submit" class="btn px-4 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div></div></form>';
-    $html = preg_replace(
-        '/<\/div>\s*(<div id="job_data" style="position: relative; z-index: 1;">)/',
-        $homeButton . '$1',
-        $html,
-        1
-    );
-
-    return $html;
+    return view('homepage.index', [
+        'jobs' => $jobs->paginate(5),
+        'count_job' => $jobs->count()
+    ]);
 });
 
-Route::get('/home', fn () => redirect('/'));
+Route::get('/home', function(){
+    return redirect('/');
+});
 
 Route::get('/job/{id_job}', function($id){
     insertVisitor(getUserIpAddr(), '/job_detail');
-    return view('homepage.job_detail', ['id' => $id]);
+
+    return view('homepage.job_detail', [
+        'id' => $id
+    ]);
 });
 
 Route::get('/jobs', function(Request $request){
@@ -112,12 +103,15 @@ Route::get('/jobs', function(Request $request){
     if ($request->filled('job_category')) {
         $jobs->where('jobcategory_id', $request->job_category);
     }
+
     if ($request->filled('location')) {
         $jobs->where('location_id', $request->location);
     }
+
     if ($request->filled('job_type')) {
         $jobs->where('type', $request->job_type);
     }
+
     if ($request->filled('search')) {
         $search = $request->search;
         $jobs->where(function ($query) use ($search) {
@@ -136,65 +130,11 @@ Route::get('/jobs', function(Request $request){
     }
 
     $countJob = (clone $jobs)->count();
-    $html = view('homepage.jobs', ['jobs' => $jobs->paginate(5)->withQueryString(), 'count_job' => $countJob])->render();
 
-    // Normal PHP GET form: filters are submitted only when the button is clicked.
-    $html = str_replace(
-        '<form action="" class="jobs-filter-form">',
-        '<form action="/jobs" method="GET" class="jobs-filter-form">',
-        $html
-    );
-    $html = str_replace('<select id="location" name="select" data-picker>', '<select id="location" name="location" data-picker>', $html);
-    $html = str_replace('<select id="job_category" name="select" data-picker>', '<select id="job_category" name="job_category" data-picker>', $html);
-    $html = str_replace('<select id="sort_by" name="select">', '<select id="sort_by" name="sort_by">', $html);
-
-    // Add a real submit button to the sidebar form. Use a regex so indentation/newlines do not matter.
-    $html = preg_replace(
-        '/(<form action="\/jobs" method="GET" class="jobs-filter-form">.*?)(<\/form>)/s',
-        '$1<div class="mt-4"><button type="submit" class="btn w-100 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div>$2',
-        $html,
-        1
-    );
-
-    // Keep the current filter values after a normal GET request.
-    $searchValue = e($request->query('search', ''));
-    $html = preg_replace(
-        '/(<input class="form-control" name="search" id="search" type="search"[^>]*)(>)/',
-        '$1 value="' . $searchValue . '"$2',
-        $html,
-        1
-    );
-
-    $locationValue = (string) $request->query('location', '');
-    $categoryValue = (string) $request->query('job_category', '');
-    if ($locationValue !== '') {
-        $pattern = '/(<select id="location" name="location" data-picker>.*?<option value="' . preg_quote($locationValue, '/') . '")/s';
-        $html = preg_replace($pattern, '$1 selected', $html, 1);
-    }
-    if ($categoryValue !== '') {
-        $pattern = '/(<select id="job_category" name="job_category" data-picker>.*?<option value="' . preg_quote($categoryValue, '/') . '")/s';
-        $html = preg_replace($pattern, '$1 selected', $html, 1);
-    }
-
-    $jobType = (string) $request->query('job_type', '');
-    if ($jobType !== '') {
-        $html = preg_replace(
-            '/(<input name="job_type" type="radio" value="' . preg_quote($jobType, '/') . '")/',
-            '$1 checked',
-            $html,
-            1
-        );
-    }
-
-    // Remove the old AJAX/filter-on-change code. Keep only the picker UI plugin.
-    $html = preg_replace(
-        '/<script>\s*\$\(document\)\.ready\(function\(\) \{.*?<\/script>/s',
-        '<script>\n    $(document).ready(function() {\n        $(\'[data-picker]\').picker({\n            search: true,\n            searchAutofocus: false,\n            texts: {\n                trigger: \'Select filter\',\n                search: \'Search...\',\n                noResult: \'No result found\'\n            }\n        });\n    });\n</script>',
-        $html,
-        1
-    );
-
-    return $html;
+    return view('homepage.jobs', [
+        'jobs' => $jobs->paginate(5)->withQueryString(),
+        'count_job' => $countJob
+    ]);
 });
 
 Route::get('/get-more-jobs', function (Request $request) {
@@ -203,12 +143,15 @@ Route::get('/get-more-jobs', function (Request $request) {
     if ($request->filled('job_category')) {
         $jobs->where('jobcategory_id', $request->job_category);
     }
+
     if ($request->filled('location')) {
         $jobs->where('location_id', $request->location);
     }
+
     if ($request->filled('job_type')) {
         $jobs->where('type', $request->job_type);
     }
+
     if ($request->filled('search')) {
         $search = $request->search;
         $jobs->where(function($query) use ($search) {
@@ -234,10 +177,26 @@ Route::get('/get-more-jobs', function (Request $request) {
     ])->render();
 })->name('jobs.get-more-jobs');
 
-Route::get('/about', function(){ insertVisitor(getUserIpAddr(), '/about'); return view('homepage.about'); });
-Route::get('/contact', function(){ insertVisitor(getUserIpAddr(), '/contact'); return view('homepage.contact'); });
+Route::get('/about', function(){
+    insertVisitor(getUserIpAddr(), '/about');
+
+    return view('homepage.about');
+});
+
+Route::get('/contact', function(){
+    insertVisitor(getUserIpAddr(), '/contact');
+
+    return view('homepage.contact');
+});
+
 Route::post('/send_message', function(Request $request){
-    Message::create(['name' => $request->name, 'subject' => $request->subject, 'email' => $request->email, 'status' => 'unread', 'message' => $request->message]);
+    Message::create([
+        'name' => $request->name,
+        'subject' => $request->subject,
+        'email' => $request->email,
+        'status' => 'unread',
+        'message' => $request->message,
+    ]);
     return redirect('/contact')->with('success', 'Your Message has been send');
 });
 
@@ -246,6 +205,7 @@ Route::post('/apply_job', [ApplyJobController::class, 'apply_job_post'])->name('
 Route::get('/mail', [MailController::class, 'sendMail']);
 Route::post('/mail/send_mail', [MailController::class, 'send_mail']);
 Route::get('/send', [MailController::class, 'index']);
+
 Route::get('/auth/login', [AuthController::class, 'login'])->middleware('guest')->name('login');
 Route::get('/login', [AuthController::class, 'login'])->middleware('guest')->name('login');
 Route::name('auth.')->group(function(){
@@ -256,12 +216,31 @@ Route::name('auth.')->group(function(){
 });
 
 Route::name('admin.')->group(function(){
-    Route::get('/dashboard', function(){
-        $visitor = DB::table('visitors')->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))->groupBy('date')->whereDate('created_at', '>=', \Carbon\Carbon::today()->subDays(7))->orderBy('date', 'asc')->get();
-        $jobCategories = Jobcategory::all(); $categories = []; $jobsCount = [];
-        foreach ($jobCategories as $val) $categories[] = $val->name;
-        foreach ($jobCategories as $val) $jobsCount[] = $val->jobs->count();
-        return view('dashboard.index', ['title' => 'Dashboard', 'jobsCount' => response()->json($jobsCount), 'categories' => response()->json($categories), 'job_categories' => Jobcategory::all()->toJson(), 'visitors' => $visitor]);
+    Route::get('/dashboard', function()
+    {
+        $visitor = DB::table('visitors')
+                 ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+                 ->groupBy('date')
+                 ->whereDate('created_at', '>=' , \Carbon\Carbon::today()->subDays(7))
+                 ->orderBy('date', 'asc')
+                 ->get();
+
+        $jobCategories = Jobcategory::all();
+        $categories = [];
+        $jobsCount = [];
+        foreach ($jobCategories as $key => $val) {
+            $categories[] = $val->name;
+        }
+        foreach ($jobCategories as $key => $val) {
+            $jobsCount[] = $val->jobs->count();
+        }
+        return view('dashboard.index', [
+            'title' => 'Dashboard',
+            'jobsCount' => response()->json($jobsCount),
+            'categories' => response()->json($categories),
+            'job_categories' => Jobcategory::all()->toJson(),
+            'visitors' => $visitor
+        ]);
     })->middleware('auth');
     Route::get('/dashboard/content', [ContentController::class, 'form'])->middleware('auth');
     Route::get('/dashboard/messages', [MessageController::class, 'index'])->middleware('auth');
@@ -270,12 +249,16 @@ Route::name('admin.')->group(function(){
     Route::get('/dashboard/emails', [MessageController::class, 'emails'])->middleware('auth');
     Route::get('/dashboard/emails/write_email', [MessageController::class, 'write_email'])->middleware('auth');
     Route::get('/dashboard/emails/{id_email}', [MessageController::class, 'show_email']);
-    Route::post('/messages/reply_message', [MessageController::class, 'reply_message'])->middleware('auth');
+    Route::post('/messages/reply_message', [MessageController::class, 'reply_message'])->middleware('auth');/*  */
+
     Route::put('/content/store', [ContentController::class, 'store'])->middleware('auth');
+
     Route::get('/dashboard/applyprocess', [ApplyprocessController::class, 'form'])->middleware('auth');
     Route::put('/applyprocess/store', [ApplyprocessController::class, 'store'])->middleware('auth');
-    Route::resource('/dashboard/mediasocials', MediasocialController::class)->middleware('auth');
-    Route::resource('/dashboard/companies', CompanyController::class)->middleware('auth');
+
+
+    Route::resource('/dashboard/mediasocials', MediasocialController::class )->middleware('auth');
+    Route::resource('/dashboard/companies', CompanyController::class )->middleware('auth');
     Route::resource('/dashboard/candidates', CandidateController::class)->middleware('auth');
     Route::get('/dashboard/jobcategories/slug', [JobcategoryController::class, 'slug'])->middleware('auth');
     Route::resource('/dashboard/jobcategories', JobcategoryController::class)->middleware('auth');
@@ -283,6 +266,7 @@ Route::name('admin.')->group(function(){
     Route::get('/dashboard/jobs/dump', [JobController::class, 'dump'])->middleware('auth');
     Route::get('/jobs/apply-delete/{id}', [JobController::class, 'apply_delete'])->middleware('auth')->name('job.apply-delete');
     Route::get('/dashboard/jobs/apply-jobs-detail/{apply_job}', [JobController::class, 'apply_job_detail'])->middleware('auth')->name('job.apply-job-detail');
+
     Route::resource('/dashboard/users', UserController::class)->middleware('auth');
     Route::get('/dashboard/jobs/apply-jobs/{job}', [JobController::class, 'apply_jobs'])->middleware('auth')->name('job.apply-job');
     Route::get('/dashboard/jobs/{job}/candidates', [JobController::class, 'candidates'])->middleware('auth')->name('job.candidates');
@@ -290,7 +274,11 @@ Route::name('admin.')->group(function(){
     Route::put('/dashboard/jobs/{job}/candidates/{jobCandidate}', [JobController::class, 'updateCandidate'])->middleware('auth')->name('job.candidates.update');
     Route::put('/dashboard/jobs/{job}/candidates/{jobCandidate}/milestones', [JobCandidateMilestoneController::class, 'update'])->middleware('auth')->name('job.candidates.milestones.update');
     Route::delete('/dashboard/jobs/{job}/candidates/{jobCandidate}', [JobController::class, 'destroyCandidate'])->middleware('auth')->name('job.candidates.destroy');
+
+    Route::get('/dashboard/jobs/apply-jobs-detail/{apply_job}', [JobController::class, 'apply_job_detail'])->middleware('auth')->name('job.apply-job-detail');
     Route::put('/dashboard/jobs/apply-jobs-detail/{apply_job}', [JobController::class, 'update_apply_job_detail'])->middleware('auth')->name('job.apply-job-detail.update');
+
+
     Route::resource('/dashboard/jobs', JobController::class)->middleware('auth');
     Route::delete('/dashboard/jobs/delete_dump/{id_job}', [JobController::class, 'dump_destroy'])->middleware('auth');
 });
