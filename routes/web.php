@@ -69,14 +69,138 @@ function activeJobsQuery()
         ->orderBy('id', 'desc');
 }
 
+function appendHomepageAjaxStateScript($html)
+{
+    $script = <<<'HTML'
+<style>
+    .job-data-ajax-state {
+        min-height: 220px;
+        padding: 36px 24px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .job-data-ajax-state-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .job-data-ajax-spinner {
+        width: 42px;
+        height: 42px;
+        border: 4px solid rgba(42, 147, 213, 0.18);
+        border-top-color: #2a93d5;
+        border-radius: 50%;
+        animation: homepage-job-spin 0.75s linear infinite;
+    }
+
+    .job-data-ajax-title {
+        margin: 0;
+        color: #1e214e;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .job-data-ajax-text {
+        margin: 0;
+        color: #64748b;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .job-data-ajax-state.is-error .job-data-ajax-spinner {
+        display: none;
+    }
+
+    .job-data-ajax-state.is-error .job-data-ajax-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    @keyframes homepage-job-spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    $(function () {
+        function isHomepageJobsRequest(settings) {
+            return settings && typeof settings.url === 'string' && settings.url.indexOf('/get-more-jobs') !== -1;
+        }
+
+        function showHomepageJobLoading() {
+            $('#job_data').html(
+                '<div class="job-data-ajax-state" aria-live="polite" aria-busy="true">' +
+                    '<div class="job-data-ajax-state-inner">' +
+                        '<div class="job-data-ajax-spinner" aria-hidden="true"></div>' +
+                        '<h4 class="job-data-ajax-title">Loading jobs...</h4>' +
+                        '<p class="job-data-ajax-text">Updating the job listings. Please wait.</p>' +
+                    '</div>' +
+                '</div>'
+            );
+        }
+
+        function showHomepageJobError() {
+            $('#job_data').html(
+                '<div class="job-data-ajax-state is-error" role="alert">' +
+                    '<div class="job-data-ajax-state-inner">' +
+                        '<div class="job-data-ajax-icon" aria-hidden="true">!</div>' +
+                        '<h4 class="job-data-ajax-title">Could not load jobs</h4>' +
+                        '<p class="job-data-ajax-text">Please try changing the filter again.</p>' +
+                    '</div>' +
+                '</div>'
+            );
+        }
+
+        $(document).on('ajaxSend.homepageJobsState', function (event, jqXHR, settings) {
+            if (isHomepageJobsRequest(settings)) {
+                showHomepageJobLoading();
+            }
+        });
+
+        $(document).on('ajaxError.homepageJobsState', function (event, jqXHR, settings, error) {
+            if (isHomepageJobsRequest(settings) && error !== 'abort') {
+                showHomepageJobError();
+            }
+        });
+    });
+</script>
+HTML;
+
+    if (stripos($html, '</body>') !== false) {
+        return preg_replace('/<\/body>/i', $script . '</body>', $html, 1);
+    }
+
+    return $html . $script;
+}
+
 Route::get('/', function(){
     insertVisitor(getUserIpAddr(), '/home');
     $jobs = activeJobsQuery();
 
-    return view('homepage.index', [
+    $html = view('homepage.index', [
         'jobs' => $jobs->paginate(5),
         'count_job' => $jobs->count()
-    ]);
+    ])->render();
+
+    return appendHomepageAjaxStateScript($html);
 });
 
 Route::get('/home', function(){
