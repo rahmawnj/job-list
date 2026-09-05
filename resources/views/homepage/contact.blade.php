@@ -6,7 +6,6 @@
 
 @section('container')
 
-
 <div class="slider-area ">
     <div class="single-slider section-overly slider-height2 d-flex align-items-center" data-background="{{asset('storage/' . App\Models\Content::where('name', 'slider_background')->first()->description)}}">
         <div class="container">
@@ -14,15 +13,13 @@
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
                         <h2>{!! \App\Models\Content::where('name', 'title_contact_hero')->first()->description !!}</h2>
-                    
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-    <!-- Hero Area End -->
-<!-- ================ contact section start ================= -->
+
 <section class="contact-section">
     <div class="container">
         <div class="row align-items-start g-4">
@@ -258,13 +255,25 @@
     border: 1px solid #e2e8f0;
     color: #1e214e;
     font-size: 18px;
-    transition: all 0.25s ease;
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    will-change: transform;
+}
+.social-media-item i {
+    color: inherit;
+    transition: color 0.2s ease;
 }
 .social-media-item:hover {
-    background: linear-gradient(135deg, #3aa6ea 0%, #2a8ed8 100%);
+    background: #1e214e;
+    border-color: #1e214e;
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 18px rgba(42, 147, 213, 0.18);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(30, 33, 78, 0.18);
+}
+.social-media-item:focus-visible,
+.hero-social-icon:focus-visible {
+    outline: 2px solid #2a93d5;
+    outline-offset: 3px;
 }
 @media (max-width: 991px) {
     .contact-section {
