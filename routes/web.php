@@ -70,10 +70,20 @@ function activeJobsQuery()
 {
     return Job::where('status', 'active')
         ->orderBy('updated_at', 'desc')
-    ->orderBy('created_at', 'desc')
-    ->orderBy('id', 'desc');
+        ->orderBy('created_at', 'desc')
+        ->orderBy('id', 'desc');
 }
 
+function appendJobsFilterScript($html, $script)
+{
+    $tag = '<script>' . $script . '</script>';
+
+    if (stripos($html, '</body>') !== false) {
+        return preg_replace('/<\/body>/i', $tag . '</body>', $html, 1);
+    }
+
+    return $html . $tag;
+}
 
 Route::get('/', function(){
 
@@ -81,10 +91,45 @@ Route::get('/', function(){
 
     $jobs = activeJobsQuery();
 
-    return view('homepage.index', [
+    $topCategories = Jobcategory::where('is_top_category', true)
+        ->whereNotNull('logo')
+        ->get(['id', 'name']);
+
+    $categoryMap = $topCategories->mapWithKeys(function ($category) {
+        return [$category->name => $category->id];
+    });
+
+    $html = view('homepage.index', [
       'jobs' => $jobs->paginate(5),
       'count_job' => $jobs->count()
-    ]);
+    ])->render();
+
+    $categoryMapJson = json_encode($categoryMap, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+    return appendJobsFilterScript($html, <<<JS
+(function () {
+    var topCategoryMap = {$categoryMapJson};
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.single-services').forEach(function (card) {
+            var title = card.querySelector('h5');
+            var link = card.closest('a');
+
+            if (!title || !link) {
+                return;
+            }
+
+            var categoryName = title.textContent.trim();
+            var categoryId = topCategoryMap[categoryName];
+
+            if (categoryId) {
+                link.href = '/jobs?job_category=' + encodeURIComponent(categoryId);
+            }
+        });
+    });
+})();
+JS
+    );
 });
 Route::get('/home', function(){
         return redirect('/');
@@ -112,44 +157,131 @@ Route::post('/jobs', function(Request $request){
     ]);
 });
 
-// Route::get('/jobs', function(){
-//     insertVisitor(getUserIpAddr(), '/jobs');
-//   return view('homepage.jobs', [
-//     'jobs' => Job::where('status', 'active')->paginate(5),
-//     'count_job' => Job::where('status', 'active')->count()
-// ]);
-// });
-
-Route::get('/jobs', function(){
+Route::get('/jobs', function(Request $request){
     insertVisitor(getUserIpAddr(), '/jobs');
 
     $jobs = activeJobsQuery();
 
-    return view('homepage.jobs', [
-        'jobs' => $jobs->paginate(5),
-        'count_job' => $jobs->count()
-    ]);
+    if ($request->filled('job_category')) {
+        $jobs->whereHas('jobcategory', function ($query) use ($request) {
+            $query->whereKey($request->job_category);
+        });
+    }
+
+    if ($request->filled('location')) {
+        $jobs->where('location_id', $request->location);
+    }
+
+    if ($request->filled('job_type')) {
+        $jobs->where('type', $request->job_type);
+    }
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $jobs->where(function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('type', 'like', "%{$search}%")
+                ->orWhere('salary', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhereHas('jobcategory', function ($categoryQuery) use ($search) {
+                    $categoryQuery->where('name', 'like', "%{$search}%");
+                });
+        });
+    }
+
+    $countJob = (clone $jobs)->count();
+    $html = view('homepage.jobs', [
+        'jobs' => $jobs->paginate(5)->withQueryString(),
+        'count_job' => $countJob
+    ])->render();
+
+    $jobCategory = $request->query('job_category', '');
+
+    return appendJobsFilterScript($html, <<<JS
+(function () {
+    var initialJobCategory = "{$jobCategory}";
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!initialJobCategory) {
+            return;
+        }
+
+        var categorySelect = document.getElementById('job_category');
+        if (!categorySelect) {
+            return;
+        }
+
+        categorySelect.value = initialJobCategory;
+        if (window.jQuery) {
+            window.jQuery(categorySelect).trigger('change');
+        }
+    });
+})();
+
+(function () {
+    function enableRadioUncheck() {
+        if (!window.jQuery) {
+            return;
+        }
+
+        window.jQuery(document)
+            .off('click.jobsTypeUncheck', '.jobs-type-filter input[name="job_type"]')
+            .on('click.jobsTypeUncheck', '.jobs-type-filter input[name="job_type"]', function (event) {
+                var radio = this;
+
+                if (radio.dataset.wasChecked === 'true') {
+                    event.preventDefault();
+                    radio.checked = false;
+                    radio.dataset.wasChecked = 'false';
+                    window.jQuery(radio).trigger('change');
+                    return;
+                }
+
+                document.querySelectorAll('.jobs-type-filter input[name="job_type"]').forEach(function (item) {
+                    item.dataset.wasChecked = item === radio ? 'true' : 'false';
+                });
+            });
+
+        window.jQuery('.jobs-type-filter input[name="job_type"]').each(function () {
+            this.dataset.wasChecked = this.checked ? 'true' : 'false';
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', enableRadioUncheck);
+    } else {
+        enableRadioUncheck();
+    }
+})();
+JS
+    );
 });
 
 
 Route::get('/get-more-jobs', function (Request $request) {
     if($request->ajax()) {
         $jobs = activeJobsQuery();
-        if (!empty($request->job_category)) {
-            $jobs->where('jobcategory_id', $request->job_category);
+        if ($request->filled('job_category')) {
+            $jobs->whereHas('jobcategory', function ($query) use ($request) {
+                $query->whereKey($request->job_category);
+            });
         }
-        if (!empty($request->location)) {
+        if ($request->filled('location')) {
             $jobs->where('location_id', $request->location);
         }
-        if(!empty($request->job_type)) {
+        if($request->filled('job_type')) {
             $jobs->where('type', $request->job_type);
         }
-        if(!empty($request->search)){
-            $jobs->where(function($query) use ($request){
-                $query->where('title', 'like', "%{$request->search}%")
-                      ->orWhere('type', 'like', "%{$request->search}%")
-                      ->orWhere('salary', 'like', "%{$request->search}%")
-                      ->orWhere('description', 'like', "%{$request->search}%");
+        if($request->filled('search')){
+            $search = $request->search;
+            $jobs->where(function($query) use ($search){
+                $query->where('title', 'like', "%{$search}%")
+                      ->orWhere('type', 'like', "%{$search}%")
+                      ->orWhere('salary', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhereHas('jobcategory', function ($categoryQuery) use ($search) {
+                          $categoryQuery->where('name', 'like', "%{$search}%");
+                      });
             });
         }
         if (!empty($request->sort_by)) {
@@ -161,11 +293,11 @@ Route::get('/get-more-jobs', function (Request $request) {
         }
         $count_job = $jobs->count();
         return view('homepage.job_data', [
-            'jobs' => $jobs->paginate(5),
+            'jobs' => $jobs->paginate(5)->withQueryString(),
             'count_job' => $count_job
         ])->render();
     }
-})->name('jobs.get-more-jobs');
+});
 
 
 Route::get('/about', function(){
