@@ -2,6 +2,35 @@
 
 @push('page-css')
 <link href="{{ asset('assets/dashboard/plugins/select-picker/dist/picker.min.css') }}" rel="stylesheet">
+<style>
+    .milestone-row-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .milestone-row-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .notes-help {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 6px;
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .notes-count {
+        white-space: nowrap;
+    }
+</style>
 @endpush
 
 @section('container')
@@ -52,7 +81,7 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>CV Link</th>
-                                    <th>Milestone</th>
+                                    <th>Recruitment Process</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -71,20 +100,22 @@
                                         </td>
                                         <td>
                                             @if($item->milestones->isNotEmpty())
-                                                @foreach($item->milestones as $milestone)
-                                                    <div class="mb-1">
-                                                        {{ str_replace('_', ' ', ucfirst($milestone->step)) }}
-                                                        <span class="text-muted">({{ str_replace('_', ' ', ucfirst($milestone->status ?? '-')) }})</span>
-                                                    </div>
-                                                @endforeach
+                                                <div class="d-flex flex-column gap-1">
+                                                    @foreach($item->milestones as $milestone)
+                                                        <div>
+                                                            {{ str_replace('_', ' ', ucfirst($milestone->step)) }}
+                                                            <span class="text-muted">({{ str_replace('_', ' ', ucfirst($milestone->status ?? '-')) }})</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             @else
-                                                <span class="text-muted">No milestone</span>
+                                                <span class="text-muted">No recruitment process yet</span>
                                             @endif
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
                                                 <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#milestoneModal{{ $item->id }}">
-                                                    <i class="fa fa-list-check"></i> Milestone
+                                                    <i class="fa fa-list-check"></i> Recruitment Process
                                                 </button>
                                                 <form action="{{ route('admin.job.candidates.destroy', [$job->id, $item->id]) }}" method="POST" onsubmit="return confirm('Unassign this candidate from this job?')">
                                                     @csrf
@@ -104,7 +135,7 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title">Milestone - {{ $item->candidate->name ?? 'Candidate' }}</h5>
+                                                        <h5 class="modal-title">Recruitment Process - {{ $item->candidate->name ?? 'Candidate' }}</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
@@ -116,7 +147,14 @@
 
                                                             @forelse($candidateMilestones as $index => $milestone)
                                                                 <div class="milestone-row border rounded p-3 mb-3">
-                                                                    <div class="row g-3 align-items-end">
+                                                                    <div class="milestone-row-header">
+                                                                        <h6 class="milestone-row-title">Recruitment Step {{ $index + 1 }}</h6>
+                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
+                                                                            <i class="fa fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <div class="row g-3">
                                                                         <div class="col-md-4">
                                                                             <label class="form-label">Step</label>
                                                                             <select name="milestones[{{ $index }}][step]" class="form-control" required>
@@ -135,24 +173,30 @@
                                                                                 @endforeach
                                                                             </select>
                                                                         </div>
-                                                                        <div class="col-md-2">
+                                                                        <div class="col-md-5">
                                                                             <label class="form-label">Date</label>
                                                                             <input type="date" name="milestones[{{ $index }}][date]" class="form-control" value="{{ $milestone->date }}">
                                                                         </div>
-                                                                        <div class="col-md-2">
+                                                                        <div class="col-12">
                                                                             <label class="form-label">Notes</label>
-                                                                            <input type="text" name="milestones[{{ $index }}][notes]" class="form-control" maxlength="500" value="{{ $milestone->notes }}">
-                                                                        </div>
-                                                                        <div class="col-md-1">
-                                                                            <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
-                                                                                <i class="fa fa-trash"></i>
-                                                                            </button>
+                                                                            <textarea name="milestones[{{ $index }}][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step...">{{ $milestone->notes }}</textarea>
+                                                                            <div class="notes-help">
+                                                                                <span>Describe important updates, feedback, or follow-up details for this step.</span>
+                                                                                <span class="notes-count"><span class="current-count">{{ strlen($milestone->notes ?? '') }}</span>/500</span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             @empty
                                                                 <div class="milestone-row border rounded p-3 mb-3">
-                                                                    <div class="row g-3 align-items-end">
+                                                                    <div class="milestone-row-header">
+                                                                        <h6 class="milestone-row-title">Recruitment Step 1</h6>
+                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
+                                                                            <i class="fa fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <div class="row g-3">
                                                                         <div class="col-md-4">
                                                                             <label class="form-label">Step</label>
                                                                             <select name="milestones[0][step]" class="form-control" required>
@@ -171,18 +215,17 @@
                                                                                 @endforeach
                                                                             </select>
                                                                         </div>
-                                                                        <div class="col-md-2">
+                                                                        <div class="col-md-5">
                                                                             <label class="form-label">Date</label>
                                                                             <input type="date" name="milestones[0][date]" class="form-control">
                                                                         </div>
-                                                                        <div class="col-md-2">
+                                                                        <div class="col-12">
                                                                             <label class="form-label">Notes</label>
-                                                                            <input type="text" name="milestones[0][notes]" class="form-control" maxlength="500">
-                                                                        </div>
-                                                                        <div class="col-md-1">
-                                                                            <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
-                                                                                <i class="fa fa-trash"></i>
-                                                                            </button>
+                                                                            <textarea name="milestones[0][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step..."></textarea>
+                                                                            <div class="notes-help">
+                                                                                <span>Describe important updates, feedback, or follow-up details for this step.</span>
+                                                                                <span class="notes-count"><span class="current-count">0</span>/500</span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -191,18 +234,18 @@
 
                                                         @if(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))
                                                             <div class="alert alert-warning mb-0">
-                                                                Milestone step/status belum dikonfigurasi di Settings.
+                                                                Recruitment process step/status belum dikonfigurasi di Settings.
                                                             </div>
                                                         @else
                                                             <button type="button" class="btn btn-outline-primary btn-sm add-milestone" data-target="milestoneRows{{ $item->id }}">
-                                                                <i class="fa fa-plus"></i> Add Milestone
+                                                                <i class="fa fa-plus"></i> Add Recruitment Step
                                                             </button>
                                                         @endif
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
                                                         <button type="submit" class="btn btn-primary" @disabled(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))>
-                                                            <i class="fa fa-save"></i> Save Milestones
+                                                            <i class="fa fa-save"></i> Save Recruitment Process
                                                         </button>
                                                     </div>
                                                 </form>
@@ -278,6 +321,29 @@
                 });
             }
 
+            function updateNotesCount(textarea) {
+                const counter = textarea.closest('.col-12')?.querySelector('.current-count');
+                if (counter) {
+                    counter.textContent = textarea.value.length;
+                }
+            }
+
+            function updateStepTitles(container) {
+                container.querySelectorAll('.milestone-row').forEach(function (row, index) {
+                    const title = row.querySelector('.milestone-row-title');
+                    if (title) {
+                        title.textContent = 'Recruitment Step ' + (index + 1);
+                    }
+                });
+            }
+
+            document.querySelectorAll('.milestone-notes').forEach(function (textarea) {
+                textarea.addEventListener('input', function () {
+                    updateNotesCount(textarea);
+                });
+                updateNotesCount(textarea);
+            });
+
             document.querySelectorAll('.add-milestone').forEach(function (button) {
                 button.addEventListener('click', function () {
                     const target = document.getElementById(button.dataset.target);
@@ -288,8 +354,8 @@
                     const template = rows[0]?.cloneNode(true);
                     if (!template) return;
 
-                    template.querySelectorAll('input, select').forEach(function (field) {
-                        field.name = field.name.replace(/milestones\\[[0-9]+\\]/, 'milestones[' + nextIndex + ']');
+                    template.querySelectorAll('input, select, textarea').forEach(function (field) {
+                        field.name = field.name.replace(/milestones\[[0-9]+\]/, 'milestones[' + nextIndex + ']');
                         if (field.tagName === 'SELECT') {
                             field.selectedIndex = 0;
                         } else {
@@ -297,7 +363,15 @@
                         }
                     });
 
+                    const counter = template.querySelector('.current-count');
+                    if (counter) counter.textContent = '0';
+
                     target.appendChild(template);
+                    updateStepTitles(target);
+
+                    template.querySelector('.milestone-notes')?.addEventListener('input', function () {
+                        updateNotesCount(this);
+                    });
                 });
             });
 
@@ -312,9 +386,11 @@
                 const rows = container.querySelectorAll('.milestone-row');
                 if (rows.length > 1) {
                     row.remove();
+                    updateStepTitles(container);
                 } else {
-                    row.querySelectorAll('input').forEach(input => input.value = '');
+                    row.querySelectorAll('input, textarea').forEach(input => input.value = '');
                     row.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                    updateNotesCount(row.querySelector('.milestone-notes'));
                 }
             });
 
