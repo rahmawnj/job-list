@@ -24,4 +24,9 @@ class JobCandidate extends Model
     {
         return $this->belongsTo(Candidate::class);
     }
+
+    public function milestones()
+    {
+        return $this->hasMany(JobCandidateMilestone::class)->orderBy('date', 'asc')->orderBy('id', 'asc');
+    }
 }
