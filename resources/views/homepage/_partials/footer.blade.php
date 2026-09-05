@@ -85,9 +85,16 @@
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
+            border-radius: 12px !important;
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #1e214e !important;
+            font-size: 18px !important;
             line-height: 1 !important;
+            text-decoration: none !important;
             vertical-align: middle !important;
             box-sizing: border-box;
+            transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .footer-social-consistent .site-social-link i {
@@ -98,6 +105,16 @@
             height: 1em;
             line-height: 1 !important;
             margin: 0 !important;
+            color: inherit !important;
+        }
+
+        .footer-social-consistent .site-social-link:hover,
+        .footer-social-consistent .site-social-link:focus-visible {
+            background: #1e214e !important;
+            border-color: #1e214e !important;
+            color: #fff !important;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(30, 33, 78, 0.18);
         }
 
         @media (max-width: 767px) {
