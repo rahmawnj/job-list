@@ -653,42 +653,52 @@
             }
         });
 
-        $(document).on('click', '.pagination a', function(event) {
-          event.preventDefault();
-          var page = $(this).attr('href').split('page=')[1];
-          getMoreJobs(page);
+        $(document).on('click', '#job_data .pagination a', function(event) {
+            event.preventDefault();
+
+            var href = $(this).attr('href') || '';
+            var url = new URL(href, window.location.origin);
+            getMoreJobs(url.searchParams.get('page') || 1);
         });
-        $('#job_type').on('change', function (e) {
-            getMoreJobs();
-        });
-        $('#job_category').on('change', function (e) {
-            getMoreJobs();
-        });
-        $('#location').on('change', function (e) {
-            getMoreJobs();
+
+        $(document).on('change', '.job-filter-card .job-filter-select', function() {
+            getMoreJobs(1);
         });
     });
 
+    var homepageJobRequest = null;
+
     function getMoreJobs(page) {
-      var selectedJobType = $("#job_type option:selected").val();
-      var selectedJobCategory = $("#job_category option:selected").val();
-      var selectedLocation = $("#location option:selected").val();
-      $.ajax({
-        type: "GET",
-        data: {
-          'location': selectedLocation,
-          'job_category': selectedJobCategory,
-          'job_type' : selectedJobType,
-        },
-        url: "{{ route('jobs.get-more-jobs') }}" + "?page=" + (page || 1),
-        success:function(data) {
-          $('#job_data').html(data);
-        },
-        error:function(e){
-          console.log(e)
+        var selectedJobType = $('.job-filter-card #job_type').val() || '';
+        var selectedJobCategory = $('.job-filter-card #job_category').val() || '';
+        var selectedLocation = $('.job-filter-card #location').val() || '';
+
+        if (homepageJobRequest) {
+            homepageJobRequest.abort();
         }
-      });
+
+        homepageJobRequest = $.ajax({
+            type: 'GET',
+            url: "{{ route('jobs.get-more-jobs') }}",
+            data: {
+                page: page || 1,
+                location: selectedLocation,
+                job_category: selectedJobCategory,
+                job_type: selectedJobType
+            },
+            success: function(data) {
+                $('#job_data').html(data);
+            },
+            error: function(xhr, status) {
+                if (status !== 'abort') {
+                    console.error('Failed to load homepage jobs.', xhr);
+                }
+            },
+            complete: function() {
+                homepageJobRequest = null;
+            }
+        });
     }
-  </script>
+</script>
 
 @endpush
