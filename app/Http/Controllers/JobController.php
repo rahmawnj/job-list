@@ -9,9 +9,7 @@ use App\Models\Location;
 use App\Models\Jobcategory;
 use App\Models\Candidate;
 use App\Models\JobCandidate;
-use App\Models\JobCandidateMilestone;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
@@ -297,7 +295,6 @@ class JobController extends Controller
         return view('dashboard.jobs.apply_detail', compact('apply_job', 'title'));
     }
 
-
     public function update_apply_job_detail(Request $request, ApplyJob $apply_job)
     {
         $request->validate([
@@ -320,7 +317,7 @@ class JobController extends Controller
         return view('dashboard.jobs.candidates', [
             'title' => 'Recruitment Process',
             'job' => $job,
-            'jobCandidates' => $job->jobCandidates()->with(['candidate', 'milestones'])->orderBy('id', 'desc')->get(),
+            'jobCandidates' => $job->jobCandidates()->with('candidate')->orderBy('id', 'desc')->get(),
             'candidateOptions' => Candidate::whereNotIn('id', $usedCandidateIds)->orderBy('name')->get(),
             'usedCandidateIds' => $usedCandidateIds,
         ]);
@@ -329,67 +326,26 @@ class JobController extends Controller
     public function storeCandidate(Request $request, Job $job)
     {
         $validated = $request->validate([
-            'candidate_id' => 'nullable|exists:candidates,id',
-            'candidate_search' => 'nullable|string|max:255',
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'linkedin_url' => 'nullable|url|max:255',
-            'cv_url' => 'nullable|url|max:255',
-            'portfolio_url' => 'nullable|url|max:255',
-            'milestones' => 'nullable|array',
-            'milestones.*.step' => ['nullable', 'string', Rule::in(config('milestones.steps'))],
-            'milestones.*.status' => ['nullable', 'string', Rule::in(config('milestones.statuses'))],
-            'milestones.*.date' => 'nullable|date',
-            'milestones.*.notes' => 'nullable|string',
+            'candidate_id' => 'required|exists:candidates,id',
         ]);
 
-        $candidate = null;
-        if (!empty($validated['candidate_id'])) {
-            $candidate = Candidate::find($validated['candidate_id']);
+        $alreadyAssigned = JobCandidate::where('job_id', $job->id)
+            ->where('candidate_id', $validated['candidate_id'])
+            ->exists();
+
+        if ($alreadyAssigned) {
+            return redirect()->back()
+                ->withErrors(['candidate_id' => 'Candidate sudah di-assign ke job ini.'])
+                ->withInput();
         }
 
-        if (!$candidate) {
-            $candidateData = [
-                'name' => $validated['name'] ?? $validated['candidate_search'] ?? null,
-                'email' => $validated['email'] ?? null,
-                'phone' => $validated['phone'] ?? null,
-                'linkedin_url' => $validated['linkedin_url'] ?? null,
-                'cv_url' => $validated['cv_url'] ?? null,
-                'portfolio_url' => $validated['portfolio_url'] ?? null,
-            ];
-
-            if (empty($candidateData['name'])) {
-                return redirect()->back()->withErrors(['name' => 'Candidate name is required.'])->withInput();
-            }
-
-            $candidate = Candidate::firstOrCreate(
-                $candidateData['email'] ? ['email' => $candidateData['email']] : ['name' => $candidateData['name']],
-                $candidateData
-            );
-        }
-
-        $jobCandidate = JobCandidate::create([
+        JobCandidate::create([
             'job_id' => $job->id,
-            'candidate_id' => $candidate->id,
-            'client_name' => $job->company?->name,
+            'candidate_id' => $validated['candidate_id'],
         ]);
 
-        foreach ($validated['milestones'] ?? [] as $milestone) {
-            $step = $milestone['step'] ?? 'send_resume';
-            if ($step === null || $step === '') {
-                $step = 'send_resume';
-            }
-
-            $jobCandidate->milestones()->create([
-                'step' => $step,
-                'status' => $milestone['status'] ?? 'pending',
-                'date' => $milestone['date'] ?? null,
-                'notes' => $milestone['notes'] ?? null,
-            ]);
-        }
-
-        return redirect()->route('admin.job.candidates', $job->id)->with('success', 'Candidate added to recruitment process.');
+        return redirect()->route('admin.job.candidates', $job->id)
+            ->with('success', 'Candidate berhasil di-assign.');
     }
 
     public function updateCandidate(Request $request, Job $job, JobCandidate $jobCandidate)
@@ -399,84 +355,26 @@ class JobController extends Controller
         }
 
         $validated = $request->validate([
-            'candidate_id' => 'nullable|exists:candidates,id',
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'linkedin_url' => 'nullable|url|max:255',
-            'cv_url' => 'nullable|url|max:255',
-            'portfolio_url' => 'nullable|url|max:255',
+            'candidate_id' => 'required|exists:candidates,id',
         ]);
 
-        $candidate = $jobCandidate->candidate;
+        $alreadyAssigned = JobCandidate::where('job_id', $job->id)
+            ->where('candidate_id', $validated['candidate_id'])
+            ->where('id', '!=', $jobCandidate->id)
+            ->exists();
 
-        if ($request->filled('candidate_id')) {
-            $candidate = Candidate::findOrFail($request->candidate_id);
-        }
-
-        if (!$candidate) {
-            $candidate = Candidate::firstOrCreate(
-                ['email' => $validated['email'] ?? null],
-                [
-                    'name' => $validated['name'] ?? $jobCandidate->candidate->name ?? null,
-                    'email' => $validated['email'] ?? null,
-                    'phone' => $validated['phone'] ?? null,
-                    'linkedin_url' => $validated['linkedin_url'] ?? null,
-                    'cv_url' => $validated['cv_url'] ?? null,
-                    'portfolio_url' => $validated['portfolio_url'] ?? null,
-                ]
-            );
-        }
-
-        if ($candidate && $validated['name']) {
-            $candidate->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'] ?? $candidate->email,
-                'phone' => $validated['phone'] ?? $candidate->phone,
-                'linkedin_url' => $validated['linkedin_url'] ?? $candidate->linkedin_url,
-                'cv_url' => $validated['cv_url'] ?? $candidate->cv_url,
-                'portfolio_url' => $validated['portfolio_url'] ?? $candidate->portfolio_url,
-            ]);
+        if ($alreadyAssigned) {
+            return redirect()->back()
+                ->withErrors(['candidate_id' => 'Candidate sudah di-assign ke job ini.'])
+                ->withInput();
         }
 
         $jobCandidate->update([
-            'candidate_id' => $candidate->id,
-            'client_name' => $job->company?->name,
+            'candidate_id' => $validated['candidate_id'],
         ]);
 
-        return redirect()->route('admin.job.candidates', $job->id)->with('success', 'Candidate data updated.');
-    }
-
-    public function updateMilestones(Request $request, Job $job, JobCandidate $jobCandidate)
-    {
-        if ($jobCandidate->job_id !== $job->id) {
-            abort(404);
-        }
-
-        $validated = $request->validate([
-            'milestones' => 'nullable|array',
-            'milestones.*.step' => ['nullable', 'string', Rule::in(config('milestones.steps'))],
-            'milestones.*.status' => ['nullable', 'string', Rule::in(config('milestones.statuses'))],
-            'milestones.*.date' => 'nullable|date',
-            'milestones.*.notes' => 'nullable|string',
-        ]);
-
-        $jobCandidate->milestones()->delete();
-
-        foreach ($validated['milestones'] ?? [] as $milestone) {
-            $step = $milestone['step'] ?? 'send_resume';
-            if ($step === null || $step === '') {
-                $step = 'send_resume';
-            }
-
-            $jobCandidate->milestones()->create([
-                'step' => $step,
-                'date' => $milestone['date'] ?? null,
-                'notes' => $milestone['notes'] ?? null,
-            ]);
-        }
-
-        return redirect()->route('admin.job.candidates', $job->id)->with('success', 'Milestone updated.');
+        return redirect()->route('admin.job.candidates', $job->id)
+            ->with('success', 'Assignment candidate berhasil diperbarui.');
     }
 
     public function destroyCandidate(Job $job, JobCandidate $jobCandidate)
@@ -490,4 +388,3 @@ class JobController extends Controller
         return redirect()->route('admin.job.candidates', $job->id)->with('success', 'Candidate removed from recruitment process.');
     }
 }
-
