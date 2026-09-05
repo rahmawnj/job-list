@@ -21,42 +21,37 @@
                         </div>
                     </div>
                 </div>
-                 <div class="mt-4">
-                            <div class="hero-social d-flex justify-content-center align-items-center gap-3">
-                                <span class="hero-connect-text">Connect with Us on Social Media : </span> 
-                                @foreach (\App\Models\Mediasocial::where('status', 'active')->get() as $mediasocial)
-                                     <a class="hero-social-icon mx-2" style="font-size:30px;" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
-                                        <i style="color:#1d2d5c" class="fa-brands fa-{{ $mediasocial->icon }}"></i>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                <div  class="row d-flex justify-content-center mt-5">
+                <div class="mt-4">
+                    <div class="hero-social d-flex justify-content-center align-items-center gap-3">
+                        <span class="hero-connect-text">Connect with Us on Social Media : </span>
+                        @foreach (\App\Models\Mediasocial::where('status', 'active')->get() as $mediasocial)
+                            <a class="hero-social-icon mx-2" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-{{ $mediasocial->icon }}"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-center mt-5">
                    <div class="col-12 d-flex justify-content-center">
                         <div class="w-100" style="max-width: 650px;">
                             <form action="/jobs" method="post">
                                 @csrf
                                 <div class="input-group input-group-lg shadow-sm search-hero-wrap" style="border-radius: 50px; overflow: hidden; background: #fff;">
-                                    
                                     <input id="search" type="text" class="form-control border-0 px-4 py-3 search-hero-input" name="search" placeholder="Job Title or keyword..." aria-label="Job Title or keyword" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" formnovalidate="formnovalidate" style="box-shadow: none; font-size: 16px;">
-                                    
-                                   <div class="input-group-append">
+                                    <div class="input-group-append">
                                         <button style="background-color: #2a93d5; color: white; border: none; font-size: 14px;" type="submit" class="btn px-3 h-100 d-flex align-items-center gap-2" id="inputGroup-sizing">
                                             <i class="fa fa-search" aria-hidden="true"></i><span class="find-job-label"> Find Job</span>
                                         </button>
                                     </div>
-                                    
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
-             
             </div>
         </div>
     </div>
 </div>
-
 
 <div class="support-company-area support-padding fix mt-60">
     <div class="container">
@@ -76,8 +71,8 @@
                     </div>
 
                     <div class="d-flex justify-content-center">
-                        <a style="background-color: #2a93d5; color: white; border-radius: 50px; padding: 12px 30px; font-weight: 500; box-shadow: 0 4px 10px rgba(42, 147, 213, 0.3); transition: all 0.3s ease;" 
-                           href="/about" 
+                        <a style="background-color: #2a93d5; color: white; border-radius: 50px; padding: 12px 30px; font-weight: 500; box-shadow: 0 4px 10px rgba(42, 147, 213, 0.3); transition: all 0.3s ease;"
+                           href="/about"
                            class="btn post-btn">
                             Read More <i class="fa fa-arrow-right ms-2" style="font-size: 12px;"></i>
                         </a>
@@ -127,27 +122,20 @@
         </div>
 
         <div class="row d-flex justify-content-center g-4">
-            
             @foreach(App\Models\Jobcategory::where('is_top_category', true)->whereNotNull('logo')->get() as $category)
                 <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
                     <a href="/jobs" class="text-decoration-none">
                         <div class="single-services text-center p-4 bg-white h-100 shadow-sm" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.04); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)';">
-                            
                             <div class="services-ion mb-3 d-flex align-items-center justify-content-center" style="height: 70px;">
                                 <img height="55" src="{{ asset('storage/' . $category->logo) }}" alt="{{ $category->name }}" style="object-fit: contain;">
                             </div>
-                            
                             <div class="services-cap">
-                                <h5 style="color: #1e214e; font-weight: 600; font-size: 17px; margin-bottom: 0;">
-                                    {{ $category->name }}
-                                </h5>
+                                <h5 style="color: #1e214e; font-weight: 600; font-size: 17px; margin-bottom: 0;">{{ $category->name }}</h5>
                             </div>
-
                         </div>
                     </a>
                 </div>
             @endforeach
-
         </div>
     </div>
 </div>
@@ -162,7 +150,6 @@
 
         <div class="row justify-content-center">
             <div class="col-xl-10" style="position: relative; z-index: 60;">
-                
                 <div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">
                     <div class="row g-3">
                         <div class="col-lg-4 col-md-4 col-sm-12">
@@ -199,7 +186,6 @@
                 <div id="job_data" style="position: relative; z-index: 1;">
                     @include('homepage.job_data')
                 </div>
-
             </div>
         </div>
     </div>
@@ -262,7 +248,6 @@
     align-items: center;
 }
 
-
 .hero__caption .hero-title-main {
     margin-bottom: 18px;
     font-size: 64px;
@@ -285,77 +270,47 @@
     line-height: 32px;
 }
 
-.search-hero-input,
-.search-hero-wrap button {
-    font-size: 30px !important;
-    font-weight: 500;
+.hero-social {
+    flex-wrap: wrap;
 }
 
-.search-hero-input::placeholder {
+.hero-social-icon,
+.social-media-item {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    will-change: transform;
+}
+
+.hero-social-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(29, 45, 92, 0.12);
+    color: #1d2d5c;
     font-size: 22px;
-    font-weight: 400;
+    text-decoration: none;
 }
 
-@media (max-width: 767px) {
-    .hero-home-overlay .container {
-        padding-top: 34px;
-        padding-bottom: 24px;
-    }
+.hero-social-icon i {
+    color: inherit !important;
+    transition: color 0.2s ease;
+}
 
-    .hero-home-overlay .hero__caption {
-        margin-bottom: 24px;
-    }
+.hero-social-icon:hover {
+    background: #1d2d5c;
+    border-color: #1d2d5c;
+    color: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(29, 45, 92, 0.18);
+}
 
-    .hero__caption .hero-title-main {
-        width: 100%;
-        margin-bottom: 13px;
-        font-size: 25px;
-        white-space: nowrap;
-    }
-
-    .hero__caption .hero-title-sub {
-        margin-bottom: 13px;
-        font-size: 15px;
-    }
-
-    .hero__caption .hero-description {
-        width: min(100%, 340px);
-        margin: 0 auto;
-        padding: 0 10px;
-        font-size: 12px !important;
-        line-height: 19px;
-    }
-
-    .hero-description-break {
-        display: none;
-    }
-
-    .search-hero-input,
-    .search-hero-wrap button {
-        font-size: 15px !important;
-    }
-
-    .search-hero-input::placeholder {
-        font-size: 15px;
-    }
-
-    .hero-home-overlay .hero-social {
-        margin-top: 8px;
-    }
-
-    .hero-home-overlay form {
-        margin-top: 8px;
-    }
-
-    .hero-home-overlay .search-hero-wrap button {
-        width: 58px;
-        justify-content: center;
-        padding: 0 !important;
-    }
-
-    .hero-home-overlay .find-job-label {
-        display: none;
-    }
+.hero-social-icon:focus-visible,
+.social-media-item:focus-visible {
+    outline: 2px solid #2a93d5;
+    outline-offset: 3px;
 }
 
 .search-hero-wrap {
@@ -382,8 +337,8 @@
 
 .job-filter-card {
     position: relative;
-    z-index: 100 !important; /* Memastikan kartu filter berada di lapisan teratas */
-    overflow: visible !important; /* Mencegah opsi dropdown terpotong */
+    z-index: 100 !important;
+    overflow: visible !important;
     padding-top: 28px !important;
     padding-bottom: 28px !important;
     margin-top: 36px !important;
@@ -480,6 +435,22 @@
 }
 
 @media (max-width: 767px) {
+    .hero-social {
+        gap: 8px !important;
+    }
+
+    .hero-connect-text {
+        width: 100%;
+        margin-bottom: 4px;
+        text-align: center;
+    }
+
+    .hero-social-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 19px;
+    }
+
     .job-filter-card {
         margin-top: 22px !important;
         padding: 22px 18px !important;
@@ -502,7 +473,7 @@
 
 .job-filter-select {
     position: relative;
-    z-index: 102 !important; /* Menempatkan elemen select paling tinggi */
+    z-index: 102 !important;
     display: block;
     width: 100%;
     height: 52px;
@@ -547,10 +518,12 @@
     color: #556877;
     width: 50%;
 }
+
 #clients {
     padding: 60px 0 70px;
     background-color: #f4f3f1;
 }
+
 #clients .section-tittle h2,
 #clients .section-heading h2 {
     color: #1e214e !important;
@@ -558,6 +531,7 @@
     letter-spacing: -0.05em;
     margin-bottom: 28px;
 }
+
 #clients .clients-wrap {
     width: 100%;
     max-width: none;
@@ -575,6 +549,7 @@
     overflow: hidden;
     padding: 0;
 }
+
 #clients .client-track {
     display: flex;
     width: max-content;
@@ -585,18 +560,23 @@
     padding-right: 8px;
     transform: translate3d(0, 0, 0);
 }
+
 #clients .client-track.track-right {
     animation: client-marquee-right 72s linear infinite;
 }
+
 #clients .client-track.track-left {
     animation: client-marquee-left 80s linear infinite;
 }
+
 #clients .client-track.track-right-slow {
     animation: client-marquee-right 88s linear infinite;
 }
+
 #clients .client-track:hover {
     animation-play-state: paused;
 }
+
 #clients .client-logo {
     flex: 0 0 auto;
     width: 240px;
@@ -611,6 +591,7 @@
     border-radius: 12px;
     box-shadow: 0 8px 18px rgba(30, 33, 78, 0.06);
 }
+
 #clients .client-logo img {
     max-height: 60px;
     width: auto;
@@ -618,14 +599,17 @@
     object-fit: contain;
     transition: all 0.4s ease-in-out;
 }
+
 @keyframes client-marquee-right {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
 }
+
 @keyframes client-marquee-left {
     from { transform: translateX(-50%); }
     to { transform: translateX(0); }
 }
+
 @media (max-width: 767px) {
     #clients {
         padding: 50px 0 60px;
@@ -700,5 +684,4 @@
         });
     }
 </script>
-
 @endpush
