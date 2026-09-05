@@ -478,6 +478,74 @@
         min-height: 32px;
     }
 }
+
+/* Responsive header untuk halaman /jobs */
+@media (max-width: 767px) {
+    .job-list-topbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .job-results-count {
+        flex: none !important;
+        width: 100%;
+        min-width: 0;
+        font-size: 15px !important;
+        line-height: 1.3;
+    }
+
+    .count-job .select-job-items {
+        width: 100%;
+        margin-left: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        min-width: 0;
+    }
+
+    .count-job .select-job-items span {
+        flex: 0 0 auto;
+        font-size: 12px !important;
+    }
+
+    .count-job .select-job-items select {
+        flex: 1 1 auto;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 100%;
+        height: 38px !important;
+        font-size: 12px !important;
+        padding: 0 32px 0 10px !important;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 360px) {
+    .count-job {
+        margin-bottom: 14px;
+    }
+
+    .job-results-count {
+        font-size: 14px !important;
+    }
+
+    .count-job .select-job-items span {
+        font-size: 11px !important;
+    }
+
+    .count-job .select-job-items select {
+        height: 36px !important;
+        font-size: 11px !important;
+        padding-right: 28px !important;
+    }
+}
 </style>
 @endonce
 
