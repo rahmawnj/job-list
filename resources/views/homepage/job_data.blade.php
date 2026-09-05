@@ -9,17 +9,15 @@
     font-weight: 500;
 }
 
-/* Styling Sidebar Filter agar lebih rapi dan memiliki jarak */
 .job-category-listing {
     background: #fff;
     border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 22px;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.04);
     padding: 24px;
-    margin-top: 10px; /* Menurunkan posisi sidebar sedikit */
+    margin-top: 10px;
 }
 
-/* Judul dan Header Filter */
 .job-category-listing .select-categories span,
 .job-category-listing h3,
 .job-category-listing .filter-tittle {
@@ -32,7 +30,6 @@
     gap: 8px;
 }
 
-/* Jarak antar kelompok filter (Input group, Select, Checkbox) */
 .job-category-listing .single-select-box,
 .job-category-listing .select-form,
 .job-category-listing .small-section-tittle,
@@ -45,7 +42,6 @@
     margin-bottom: 0 !important;
 }
 
-/* Styling Search Input di Filter */
 .job-category-listing input[type="text"],
 .job-category-listing .form-control {
     width: 100%;
@@ -55,8 +51,9 @@
     background-color: #f8fafc;
     font-size: 14px;
     color: #334155;
-    margin-bottom: 20px; /* Jarak bawah input pencarian */
+    margin-bottom: 20px;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .job-category-listing input[type="text"]:focus {
@@ -66,7 +63,6 @@
     outline: none;
 }
 
-/* Styling Dropdown Select */
 .job-category-listing select,
 .job-category-listing .selectric,
 .job-category-listing .nice-select {
@@ -79,18 +75,18 @@
     color: #334155;
     height: auto;
     margin-bottom: 16px;
+    box-sizing: border-box;
 }
 
-/* Styling Checkbox Tipe Pekerjaan (Full Time, Part Time, dll) */
 .job-category-listing .checkbox-form,
 .job-category-listing .switch-wrap {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Jarak antar checkbox */
+    gap: 12px;
     margin-top: 8px;
 }
 
-.job-category-listing label, 
+.job-category-listing label,
 .job-category-listing .contact-form {
     cursor: pointer;
     font-size: 14px;
@@ -109,7 +105,6 @@
     cursor: pointer;
 }
 
-/* Styling kartu item pekerjaan tunggal */
 .single-job-items {
     display: flex;
     flex-direction: column;
@@ -121,6 +116,11 @@
     padding: 18px 20px;
     transition: all 0.25s ease;
     text-align: left;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .single-job-items:hover {
@@ -134,6 +134,9 @@
     flex-direction: row !important;
     align-items: center;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .company-img {
@@ -149,6 +152,7 @@
     overflow: hidden;
     position: relative;
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .company-img a {
@@ -174,7 +178,7 @@
 }
 
 .job-tittle {
-    flex: 1;
+    flex: 1 1 auto;
     padding-left: 15px;
     display: flex !important;
     flex-direction: column !important;
@@ -182,6 +186,8 @@
     align-items: flex-start;
     text-align: left;
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .job-tittle h4 {
@@ -192,11 +198,19 @@
     line-height: 1.2;
     letter-spacing: -0.03em;
     text-align: left;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.job-tittle h4,
+.job-tittle a {
+    max-width: 100%;
 }
 
 .job-tittle ul {
     display: flex !important;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap !important;
     gap: 4px 12px;
     padding: 0;
@@ -205,19 +219,28 @@
     color: #667085;
     font-size: 14px;
     justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .job-tittle ul li {
     display: inline-flex !important;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
     text-align: left;
-    flex-shrink: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .job-tittle ul li i {
     color: #94a3b8;
     font-size: 13px;
+    flex-shrink: 0;
 }
 
 .job-meta-footer {
@@ -229,6 +252,10 @@
     padding-bottom: 8px;
     flex-wrap: nowrap;
     text-align: left;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .job-meta-footer .job-time {
@@ -238,6 +265,7 @@
     line-height: 1.3;
     text-align: left;
     white-space: nowrap;
+    min-width: 0;
 }
 
 .job-meta-footer .items-link2 {
@@ -246,10 +274,12 @@
     align-items: center;
     justify-content: center;
     min-height: 42px;
+    flex-shrink: 0;
 }
 
 .job-meta-footer .btn {
     min-width: 100px;
+    max-width: 100%;
     border-radius: 5px;
     font-size: 13px;
     font-weight: 700;
@@ -265,6 +295,7 @@
     align-items: center;
     justify-content: center;
     min-height: 42px;
+    box-sizing: border-box;
 }
 
 .job-meta-footer .btn:hover {
@@ -319,46 +350,132 @@
     line-height: 1.6;
 }
 
-/* Media Query untuk tampilan mobile */
 @media (max-width: 767px) {
     .job-category-listing {
         margin-top: 15px;
         padding: 16px;
         margin-bottom: 20px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
+
     .single-job-items {
         padding: 12px 14px;
         gap: 10px;
         border-radius: 16px;
     }
+
     .company-img {
-        width: 54px;
-        min-width: 54px;
-        height: 54px;
-        border-radius: 12px;
+        width: 50px;
+        min-width: 50px;
+        height: 50px;
+        border-radius: 11px;
     }
+
     .company-img img {
-        width: 38px;
-        height: 38px;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
     }
+
     .job-tittle {
-        padding-left: 12px;
+        padding-left: 10px;
     }
+
     .job-tittle h4 {
-        font-size: 15px;
-        margin-bottom: 4px;
+        font-size: 14px;
+        margin-bottom: 5px;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
     }
+
     .job-tittle ul {
-        gap: 2px 10px;
-        font-size: 12px;
-    }
-    .job-meta-footer .job-time {
-        font-size: 12px;
-    }
-    .job-meta-footer .btn {
-        padding: 5px 12px;
+        gap: 2px 8px;
         font-size: 11px;
-        min-width: 85px;
+        line-height: 1.35;
+    }
+
+    .job-tittle ul li {
+        max-width: 100%;
+    }
+
+    .job-tittle ul li:last-child {
+        flex-basis: 100%;
+    }
+
+    .job-tittle ul li i {
+        font-size: 11px;
+        margin-top: 1px;
+    }
+
+    .job-meta-footer {
+        gap: 8px;
+        align-items: center;
+    }
+
+    .job-meta-footer .job-time {
+        font-size: 11px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.25;
+    }
+
+    .job-meta-footer .btn {
+        padding: 5px 10px;
+        font-size: 10px;
+        min-width: 76px;
+        min-height: 34px;
+    }
+
+    .job-data-empty-title {
+        font-size: 22px;
+    }
+
+    .job-data-empty-text {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .single-job-items {
+        padding: 11px 12px;
+        gap: 8px;
+    }
+
+    .company-img {
+        width: 46px;
+        min-width: 46px;
+        height: 46px;
+    }
+
+    .company-img img {
+        width: 31px;
+        height: 31px;
+    }
+
+    .job-tittle {
+        padding-left: 8px;
+    }
+
+    .job-tittle h4 {
+        font-size: 13px;
+    }
+
+    .job-tittle ul {
+        font-size: 10px;
+        gap: 2px 6px;
+    }
+
+    .job-meta-footer .job-time {
+        font-size: 10px;
+    }
+
+    .job-meta-footer .btn {
+        min-width: 70px;
+        padding: 4px 8px;
+        font-size: 9px;
+        min-height: 32px;
     }
 }
 </style>
@@ -374,7 +491,7 @@
     </div>
 @else
     @foreach ($jobs as $job)
-    <div class="single-job-items mb-20"  style="border: none !important;">
+    <div class="single-job-items mb-20" style="border: none !important;">
         <div class="job-items align-items-center">
             <div class="company-img">
                 <a href="/job/{{$job->id}}">
@@ -393,7 +510,7 @@
             </div>
         </div>
 
-        <div class="job-meta-footer" >
+        <div class="job-meta-footer">
             @php
                 $jobTime = $job->updated_at > $job->created_at
                     ? \Carbon\Carbon::parse($job->updated_at)->diffForHumans()
@@ -422,7 +539,6 @@
                     <nav aria-label="Page navigation example">
                         @if ($jobs->hasPages())
                         <ul class="pagination" role="navigation">
-                            {{-- Previous Page Link --}}
                             @if ($jobs->onFirstPage())
                                 <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
                                     <span class="page-link" aria-hidden="true">&lsaquo;</span>
@@ -432,17 +548,17 @@
                                     <a class="page-link" href="{{ $jobs->previousPageUrl() }}" rel="prev" aria-label="@lang('pagination.previous')">&lsaquo;</a>
                                 </li>
                             @endif
-                         
+
                             <?php
-                                $start = $jobs->currentPage(); 
-                                $end = $jobs->currentPage(); 
-                                if($start < 1) {
-                                    $start = 1; 
+                                $start = $jobs->currentPage();
+                                $end = $jobs->currentPage();
+                                if ($start < 1) {
+                                    $start = 1;
                                     $end += 1;
-                                } 
-                                if($end >= $jobs->lastPage()) $end = $jobs->lastPage(); 
+                                }
+                                if ($end >= $jobs->lastPage()) $end = $jobs->lastPage();
                             ?>
-                         
+
                             @if($start > 1)
                                 <li class="page-item">
                                     <a class="page-link" href="{{ $jobs->url(1) }}">{{1}}</a>
@@ -466,8 +582,7 @@
                                     <a class="page-link" href="{{ $jobs->url($jobs->lastPage()) }}">{{$jobs->lastPage()}}</a>
                                 </li>
                             @endif
-                         
-                            {{-- Next Page Link --}}
+
                             @if ($jobs->hasMorePages())
                                 <li class="page-item">
                                     <a class="page-link" href="{{ $jobs->nextPageUrl() }}" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
