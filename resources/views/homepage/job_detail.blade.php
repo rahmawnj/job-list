@@ -152,8 +152,9 @@
 
 .post-details3 ul li {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     padding: 12px 0;
     border-bottom: 1px solid #f1f5f9;
     font-size: 15px;
@@ -164,9 +165,21 @@
     border-bottom: none;
 }
 
-.post-details3 ul li span {
+.post-details3 ul li .overview-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+    line-height: 1.3;
+}
+
+.post-details3 ul li .overview-value {
+    display: block;
+    width: 100%;
     font-weight: 600;
     color: #1e214e;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
 /* Tombol Apply Custom Youthful */
@@ -284,6 +297,18 @@
     .job-post-company .job-tittle ul {
         font-size: 13px;
         gap: 6px 12px;
+    }
+
+    .post-details3 ul li {
+        padding: 11px 0;
+    }
+
+    .post-details3 ul li .overview-label {
+        font-size: 12px;
+    }
+
+    .post-details3 ul li .overview-value {
+        font-size: 14px;
     }
 
     /* Mobile order: Job header -> Job Overview -> Requirements -> Description */
@@ -442,11 +467,26 @@
                         <h4>Job Overview</h4>
                     </div>
                     <ul>
-                        <li>Posted date : <span>{{\Carbon\Carbon::parse(App\Models\Job::find($id)->created_at)->format('d M Y')}}</span></li>
-                        <li>Location : <span>{{App\Models\Job::find($id)->location->name}}</span></li>
-                        <li>Total Position : <span>{{App\Models\Job::find($id)->total_position}}</span></li>
-                        <li>Job Type : <span>{{ucwords(str_replace("_", " ", App\Models\Job::find($id)->type))}}</span></li>
-                        <li>Salary : <span>{{App\Models\Job::find($id)->salary}}</span></li>
+                        <li>
+                            <span class="overview-label">Posted date:</span>
+                            <span class="overview-value">{{\Carbon\Carbon::parse(App\Models\Job::find($id)->created_at)->format('d M Y')}}</span>
+                        </li>
+                        <li>
+                            <span class="overview-label">Location:</span>
+                            <span class="overview-value">{{App\Models\Job::find($id)->location->name}}</span>
+                        </li>
+                        <li>
+                            <span class="overview-label">Total Position:</span>
+                            <span class="overview-value">{{App\Models\Job::find($id)->total_position}}</span>
+                        </li>
+                        <li>
+                            <span class="overview-label">Job Type:</span>
+                            <span class="overview-value">{{ucwords(str_replace("_", " ", App\Models\Job::find($id)->type))}}</span>
+                        </li>
+                        <li>
+                            <span class="overview-label">Salary:</span>
+                            <span class="overview-value">{{App\Models\Job::find($id)->salary}}</span>
+                        </li>
                     </ul>
                     <div class="apply-actions">
                         <div class="apply-btn2">
