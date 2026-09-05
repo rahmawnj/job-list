@@ -227,7 +227,7 @@
 
 .job-tittle ul li {
     display: inline-flex !important;
-    align-items: flex-start;
+    align-items: center;
     gap: 5px;
     text-align: left;
     flex: 0 1 auto;
@@ -235,12 +235,14 @@
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+    line-height: 1.35;
 }
 
 .job-tittle ul li i {
     color: #94a3b8;
     font-size: 13px;
     flex-shrink: 0;
+    line-height: 1;
 }
 
 .job-meta-footer {
@@ -398,6 +400,8 @@
 
     .job-tittle ul li {
         max-width: 100%;
+        align-items: center;
+        line-height: 1.35;
     }
 
     .job-tittle ul li:last-child {
@@ -406,7 +410,8 @@
 
     .job-tittle ul li i {
         font-size: 11px;
-        margin-top: 1px;
+        margin-top: 0;
+        line-height: 1;
     }
 
     .job-meta-footer {
@@ -550,121 +555,4 @@
 @endonce
 
 @if ($jobs->isEmpty())
-    <div class="job-data-empty" data-empty="true">
-        <div class="job-data-empty-inner">
-            <div class="job-data-empty-icon">!</div>
-            <h4 class="job-data-empty-title">No jobs found</h4>
-            <p class="job-data-empty-text">Try changing the filters or search keyword to find another opportunity.</p>
-        </div>
-    </div>
-@else
-    @foreach ($jobs as $job)
-    <div class="single-job-items mb-20" style="border: none !important;">
-        <div class="job-items align-items-center">
-            <div class="company-img">
-                <a href="/job/{{$job->id}}">
-                    <img class="shadow-sm rounded" style="border: none !important; object-fit: cover;" src="{{asset('storage/' . $job->image)}}" alt="Company Logo">
-                </a>
-            </div>
-            <div class="job-tittle job-tittle2">
-                <a href="/job/{{$job->id}}" class="text-decoration-none">
-                    <h4 class="font-weight-bold text-dark">{{$job->title}}</h4>
-                </a>
-                <ul>
-                    <li>{{\App\Models\Jobcategory::where('id', $job->jobcategory_id)->first()->name ?? ''}}</li>
-                    <li><i class="fas fa-map-marker-alt"></i> {{\App\Models\Location::where('id', $job->location_id)->first()->name ?? ''}}</li>
-                    <li>{{$job->salary}}</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="job-meta-footer">
-            @php
-                $jobTime = $job->updated_at > $job->created_at
-                    ? \Carbon\Carbon::parse($job->updated_at)->diffForHumans()
-                    : \Carbon\Carbon::parse($job->created_at)->diffForHumans();
-            @endphp
-
-            <p class="job-time">{{ $jobTime }}</p>
-
-            <div class="items-link items-link2 f-right">
-                <a href="/job/{{$job->id}}" class="btn btn-primary font-weight-bold shadow-sm px-3 py-1" style="border: none !important; background-color: #2a93d5; color: #fff;">
-                    {{ucwords(str_replace("_", " ", $job->type))}}
-                </a>
-            </div>
-        </div>
-    </div>
-    @endforeach
-@endif
-
-<div class="job-data-meta" data-total="{{ $jobs->total() ?? 0 }}" data-empty="{{ $jobs->isEmpty() ? 'true' : 'false' }}" style="display:none;"></div>
-
-<div class="pagination-area pb-50 text-center">
-    <div class="container">
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="single-wrap d-flex justify-content-center">
-                    <nav aria-label="Page navigation example">
-                        @if ($jobs->hasPages())
-                        <ul class="pagination" role="navigation">
-                            @if ($jobs->onFirstPage())
-                                <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
-                                    <span class="page-link" aria-hidden="true">&lsaquo;</span>
-                                </li>
-                            @else
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $jobs->previousPageUrl() }}" rel="prev" aria-label="@lang('pagination.previous')">&lsaquo;</a>
-                                </li>
-                            @endif
-
-                            <?php
-                                $start = $jobs->currentPage();
-                                $end = $jobs->currentPage();
-                                if ($start < 1) {
-                                    $start = 1;
-                                    $end += 1;
-                                }
-                                if ($end >= $jobs->lastPage()) $end = $jobs->lastPage();
-                            ?>
-
-                            @if($start > 1)
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $jobs->url(1) }}">{{1}}</a>
-                                </li>
-                                @if($jobs->currentPage() - 1 != 1)
-                                    <li class="page-item disabled" aria-disabled="true"><span class="page-link">...</span></li>
-                                @endif
-                            @endif
-
-                            @for ($i = $start; $i <= $end; $i++)
-                                <li class="page-item {{ ($jobs->currentPage() == $i) ? ' active' : '' }}">
-                                    <a class="page-link" href="{{ $jobs->url($i) }}">{{$i}}</a>
-                                </li>
-                            @endfor
-
-                            @if($end < $jobs->lastPage())
-                                @if($jobs->currentPage() + 1 != $jobs->lastPage())
-                                    <li class="page-item disabled" aria-disabled="true"><span class="page-link">...</span></li>
-                                @endif
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $jobs->url($jobs->lastPage()) }}">{{$jobs->lastPage()}}</a>
-                                </li>
-                            @endif
-
-                            @if ($jobs->hasMorePages())
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $jobs->nextPageUrl() }}" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
-                                </li>
-                            @else
-                                <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
-                                    <span class="page-link" aria-hidden="true">&rsaquo;</span>
-                                </li>
-                            @endif
-                        </ul>
-                        @endif
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+... (truncated)
