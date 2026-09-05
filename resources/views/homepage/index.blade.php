@@ -667,13 +667,9 @@
         $('#location').on('change', function (e) {
             getMoreJobs();
         });
-        $('#search').on('keyup', function() {
-            getMoreJobs(1);
-        });
     });
 
     function getMoreJobs(page) {
-      var search = $('#search').val();
       var selectedJobType = $("#job_type option:selected").val();
       var selectedJobCategory = $("#job_category option:selected").val();
       var selectedLocation = $("#location option:selected").val();
@@ -683,7 +679,6 @@
           'location': selectedLocation,
           'job_category': selectedJobCategory,
           'job_type' : selectedJobType,
-          'search' : search,
         },
         url: "{{ route('jobs.get-more-jobs') }}" + "?page=" + (page || 1),
         success:function(data) {
