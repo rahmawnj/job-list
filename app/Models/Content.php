@@ -9,5 +9,5 @@ class Content extends Model
 {
     use HasFactory;
 
-    protected $guard = ['id'];
+    protected $guarded = ['id'];
 }
