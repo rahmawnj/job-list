@@ -15,7 +15,7 @@ class JobCandidateMilestoneController extends Controller
         Job $job,
         JobCandidate $jobCandidate
     ) {
-        if ($jobCandidate->job_id !== $job->id) {
+        if ((int) $jobCandidate->job_id !== (int) $job->id) {
             abort(404);
         }
 
