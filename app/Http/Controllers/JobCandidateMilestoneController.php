@@ -27,7 +27,8 @@ class JobCandidateMilestoneController extends Controller
                 array_key_exists('step', $group) ||
                 array_key_exists('date', $group) ||
                 array_key_exists('notes', $group) ||
-                array_key_exists('status', $group)
+                array_key_exists('status', $group) ||
+                array_key_exists('link', $group)
             )) {
                 $rawMilestones[] = $group;
                 continue;
@@ -43,7 +44,8 @@ class JobCandidateMilestoneController extends Controller
                         array_key_exists('step', $milestone) ||
                         array_key_exists('date', $milestone) ||
                         array_key_exists('notes', $milestone) ||
-                        array_key_exists('status', $milestone)
+                        array_key_exists('status', $milestone) ||
+                        array_key_exists('link', $milestone)
                     ) {
                         $rawMilestones[] = $milestone;
                     }
@@ -68,6 +70,7 @@ class JobCandidateMilestoneController extends Controller
                 ],
                 'milestones.*.date' => ['nullable', 'date'],
                 'milestones.*.notes' => ['nullable', 'string', 'max:500'],
+                'milestones.*.link' => ['nullable', 'url', 'max:2048'],
             ]
         );
 
@@ -90,12 +93,13 @@ class JobCandidateMilestoneController extends Controller
                 'status' => $milestone['status'],
                 'date' => $milestone['date'] ?? null,
                 'notes' => $milestone['notes'] ?? null,
+                'link' => $milestone['link'] ?? null,
             ]);
         }
 
         return redirect()
             ->route('admin.job.candidates', $job->id)
-            ->with('success', 'Milestone updated successfully.')
+            ->with('success', 'Recruitment process updated successfully.')
             ->with('open_milestone_modal', $jobCandidate->id);
     }
 }
