@@ -17,10 +17,11 @@
                         <!-- Teks Ajakan & Social Media -->
                         <div class="mt-4">
                             <p class="text-white mb-3" style="font-size: 16px; font-weight: 500;">
-                                Want to get closer to us? Follow our social media:                            </p>
+                                Want to get closer to us? Follow our social media:
+                            </p>
                             <div class="hero-social d-flex justify-content-center align-items-center">
                                 @foreach (\App\Models\Mediasocial::where('status', 'active')->get() as $mediasocial)
-                                    <a class="text-white mx-2" style="font-size:30px;" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
+                                    <a class="about-hero-social-icon text-white mx-2" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
                                         <i class="fa-brands fa-{{ $mediasocial->icon }}"></i>
                                     </a>
                                 @endforeach
@@ -73,20 +74,6 @@
             padding: 36px;
         }
 
-        /* .about-image-wrap {
-            width: 100%;
-            height: 100%;
-            min-height: 260px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
-            border: 1px solid rgba(30, 33, 78, 0.05);
-            border-radius: 22px;
-            overflow: hidden;
-            padding: 18px;
-        } */
-
         .about-image-wrap img {
             display: block;
             width: 100%;
@@ -138,6 +125,29 @@
 
         .about-text p + p {
             margin-top: 16px;
+        }
+
+        .about-hero-social-icon {
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #ffffff !important;
+            background: transparent;
+            font-size: 30px;
+            text-decoration: none;
+            transition: transform 0.25s ease, color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .about-hero-social-icon:hover,
+        .about-hero-social-icon:focus-visible {
+            color: #1d2d5c !important;
+            background: #ffffff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+            text-decoration: none;
         }
 
         .section-header h3 {
@@ -199,6 +209,12 @@
             .about-text p {
                 font-size: 16px;
                 line-height: 1.8;
+            }
+
+            .about-hero-social-icon {
+                width: 42px;
+                height: 42px;
+                font-size: 25px;
             }
         }
     </style>
