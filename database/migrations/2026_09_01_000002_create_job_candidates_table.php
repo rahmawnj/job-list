@@ -12,11 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('job_id')->constrained('jobs')->cascadeOnDelete();
             $table->foreignId('candidate_id')->constrained('candidates')->cascadeOnDelete();
-            $table->string('client_name')->nullable();
-            $table->string('step')->default('send_resume');
-            $table->string('status')->default('pending');
-            $table->date('date')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
