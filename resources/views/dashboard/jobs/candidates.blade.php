@@ -26,6 +26,10 @@
                 </div>
 
                 @if (session()->has('success'))
+                    <div class="alert alert-success alert-dismissible fade show m-3 mb-0" role="alert">
+                        <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                     <div class="flash-data-success" data-flashdatasuccess="{{ session('success') }}"></div>
                 @endif
 
@@ -136,7 +140,6 @@
                                 <label class="form-label">Company / Client</label>
                                 <input type="text" class="form-control" value="{{ optional($job->company)->name ?? '-' }}" readonly>
                             </div>
-
                             <div class="col-md-12">
                                 <label class="form-label">Search Candidate</label>
                                 <select class="form-control candidate-picker" name="candidate_id" required>
@@ -146,7 +149,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
                             <div class="col-md-6">
                                 <label class="form-label">Name</label>
                                 <input type="text" class="form-control" name="name" value="{{ old('name') }}" placeholder="Candidate name">
@@ -171,7 +173,6 @@
                                 <label class="form-label">Portfolio</label>
                                 <input type="url" class="form-control" name="portfolio_url" value="{{ old('portfolio_url') }}" placeholder="https://...">
                             </div>
-
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -207,7 +208,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-
                                 <div class="col-md-6">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control" name="name" value="{{ $item->candidate->name ?? '' }}" placeholder="Candidate name">
@@ -263,42 +263,59 @@
                                     </ul>
                                 </div>
                             @endif
+
+                            @if (session()->has('success') && session('open_milestone_modal') == $item->id)
+                                <div class="alert alert-success alert-dismissible fade show py-2 mb-3" role="alert">
+                                    <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            @endif
+
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label">Milestone</label>
                                     <div class="milestone-list-edit" data-item-id="{{ $item->id }}">
                                         @php $milestones = $item->milestones->isNotEmpty() ? $item->milestones : collect([null]); @endphp
                                         @foreach($milestones as $index => $milestone)
-                                            <div class="milestone-item row g-2 align-items-end mb-3">
-                                                <div class="col-md-3">
-                                                    <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][step]">
-                                                        @foreach(config('milestones.steps') as $step)
-                                                            <option value="{{ $step }}" @selected(($milestone?->step ?? $item->step ?? '') === $step)>{{ str_replace('_', ' ', ucfirst($step)) }}</option>
-                                                        @endforeach
-                                                    </select>
+                                            <div class="milestone-item mb-3 border rounded p-3">
+                                                <div class="d-flex justify-content-end mb-2">
+                                                    <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][status]">
-                                                        @foreach(config('milestones.statuses') as $status)
-                                                            <option value="{{ $status }}" @selected(($milestone?->status ?? $item->status ?? '') === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <input type="date" class="form-control" name="milestones[{{ $item->id }}][{{ $index }}][date]" value="{{ $milestone?->date ?? '' }}">
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label mb-1">Deskripsi</label>
-                                                    <textarea class="form-control milestone-notes" name="milestones[{{ $item->id }}][{{ $index }}][notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)">{{ $milestone?->notes ?? '' }}</textarea>
-                                                    <small class="text-muted milestone-notes-counter">0/500</small>
-                                                </div>
-                                                <div class="col-md-1 text-end">
-                                                    <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove"><i class="fa fa-trash"></i></button>
+                                                <div class="row g-2">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label mb-1">Step</label>
+                                                        <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][step]">
+                                                            @foreach(config('milestones.steps') as $step)
+                                                                <option value="{{ $step }}" @selected(($milestone?->step ?? $item->step ?? '') === $step)>{{ str_replace('_', ' ', ucfirst($step)) }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label mb-1">Status</label>
+                                                        <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][status]">
+                                                            @foreach(config('milestones.statuses') as $status)
+                                                                <option value="{{ $status }}" @selected(($milestone?->status ?? $item->status ?? '') === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label mb-1">Date</label>
+                                                        <input type="date" class="form-control" name="milestones[{{ $item->id }}][{{ $index }}][date]" value="{{ $milestone?->date ?? '' }}">
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <label class="form-label mb-1">Deskripsi</label>
+                                                        <textarea class="form-control milestone-notes" name="milestones[{{ $item->id }}][{{ $index }}][notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)">{{ $milestone?->notes ?? '' }}</textarea>
+                                                        <small class="text-muted milestone-notes-counter">0/500</small>
+                                                    </div>
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
-                                    <button type="button" class="btn btn-light btn-sm add-milestone-edit-btn" data-item-id="{{ $item->id }}"><i class="fa fa-plus"></i> Add More Milestone</button>
+                                    <button type="button" class="btn btn-light btn-sm add-milestone-edit-btn" data-item-id="{{ $item->id }}">
+                                        <i class="fa fa-plus"></i> Add More Milestone
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -361,11 +378,14 @@
                 });
 
                 document.querySelectorAll('.milestone-notes').forEach(function (textarea) {
+                    if (textarea.dataset.counterBound === '1') return;
+
                     const counter = textarea.parentElement.querySelector('.milestone-notes-counter');
                     const updateCounter = function () {
                         if (counter) counter.textContent = textarea.value.length + '/500';
                     };
-                    textarea.removeEventListener('input', updateCounter);
+
+                    textarea.dataset.counterBound = '1';
                     textarea.addEventListener('input', updateCounter);
                     updateCounter();
                 });
@@ -380,32 +400,39 @@
                     const index = container.querySelectorAll('.milestone-item').length;
                     const prefix = 'milestones[' + itemId + '][' + index + ']';
                     const item = document.createElement('div');
-                    item.className = 'milestone-item row g-2 align-items-end mb-3';
+                    item.className = 'milestone-item mb-3 border rounded p-3';
                     item.innerHTML = `
-                        <div class="col-md-3">
-                            <select class="form-select" name="${prefix}[step]">
-                                @foreach(config('milestones.steps') as $step)
-                                    <option value="{{ $step }}">{{ str_replace('_', ' ', ucfirst($step)) }}</option>
-                                @endforeach
-                            </select>
+                        <div class="d-flex justify-content-end mb-2">
+                            <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove">
+                                <i class="fa fa-trash"></i>
+                            </button>
                         </div>
-                        <div class="col-md-2">
-                            <select class="form-select" name="${prefix}[status]">
-                                @foreach(config('milestones.statuses') as $status)
-                                    <option value="{{ $status }}">{{ str_replace('_', ' ', ucfirst($status)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" name="${prefix}[date]">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label mb-1">Deskripsi</label>
-                            <textarea class="form-control milestone-notes" name="${prefix}[notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)"></textarea>
-                            <small class="text-muted milestone-notes-counter">0/500</small>
-                        </div>
-                        <div class="col-md-1 text-end">
-                            <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove"><i class="fa fa-trash"></i></button>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label class="form-label mb-1">Step</label>
+                                <select class="form-select" name="${prefix}[step]">
+                                    @foreach(config('milestones.steps') as $step)
+                                        <option value="{{ $step }}">{{ str_replace('_', ' ', ucfirst($step)) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label mb-1">Status</label>
+                                <select class="form-select" name="${prefix}[status]">
+                                    @foreach(config('milestones.statuses') as $status)
+                                        <option value="{{ $status }}">{{ str_replace('_', ' ', ucfirst($status)) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label mb-1">Date</label>
+                                <input type="date" class="form-control" name="${prefix}[date]">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label mb-1">Deskripsi</label>
+                                <textarea class="form-control milestone-notes" name="${prefix}[notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)"></textarea>
+                                <small class="text-muted milestone-notes-counter">0/500</small>
+                            </div>
                         </div>`;
                     container.appendChild(item);
                     bindMilestoneButtons();
