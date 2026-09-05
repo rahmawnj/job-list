@@ -108,6 +108,26 @@
                     line-height: 1.25;
                     letter-spacing: -0.01em;
                 }
+
+                /* Mobile job cards: move the company image above the job information and center it. */
+                .single-job-items .job-items {
+                    flex-direction: column !important;
+                    align-items: center !important;
+                }
+
+                .single-job-items .company-img {
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    flex: 0 0 auto !important;
+                }
+
+                .single-job-items .job-tittle {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    padding-left: 0 !important;
+                    align-items: center !important;
+                    text-align: center !important;
+                }
             }
         </style>
    </head>
