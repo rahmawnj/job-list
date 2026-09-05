@@ -25,6 +25,68 @@
         <link rel="stylesheet" href="{{asset('assets/homepage/css/style.css')}}">
         @stack('page-css')
         <link rel="stylesheet" href="{{asset('assets/plugins/floating-whatsapp-master/floating-wpp.min.css')}}">
+        <style>
+            /* Keep the floating WhatsApp widget above every page section/filter/dropdown. */
+            .floating-wpp {
+                position: fixed !important;
+                z-index: 2147483647 !important;
+            }
+            .floating-wpp .floating-wpp-button,
+            .floating-wpp .floating-wpp-popup {
+                z-index: 2147483647 !important;
+            }
+
+            /* Keep homepage stacking levels consistent: We are Hiring and its filter use one layer. */
+            .featured-job-area,
+            .featured-job-area .container,
+            .featured-job-area .row,
+            .featured-job-area .col-xl-10,
+            .job-filter-card,
+            #job_data {
+                position: relative;
+                z-index: 100 !important;
+            }
+
+            @media (max-width: 767px) {
+                /* Top Categories: two columns on phones = 2 x 2 for four cards. */
+                .our-services .row > .col-xl-3,
+                .our-services .row > .col-lg-3,
+                .our-services .row > .col-md-4,
+                .our-services .row > .col-sm-6 {
+                    flex: 0 0 50% !important;
+                    max-width: 50% !important;
+                    width: 50% !important;
+                    padding-left: 7px !important;
+                    padding-right: 7px !important;
+                }
+
+                .our-services .row {
+                    margin-left: -7px !important;
+                    margin-right: -7px !important;
+                    row-gap: 14px !important;
+                }
+
+                .our-services .single-services {
+                    padding: 16px 10px !important;
+                }
+
+                /* Hide category names on mobile, keep the logo/card only. */
+                .our-services .services-cap {
+                    display: none !important;
+                }
+
+                .our-services .services-ion {
+                    height: 64px !important;
+                    margin-bottom: 0 !important;
+                }
+
+                .our-services .services-ion img {
+                    height: 48px !important;
+                    max-width: 100%;
+                    object-fit: contain;
+                }
+            }
+        </style>
    </head>
 
    <body>
