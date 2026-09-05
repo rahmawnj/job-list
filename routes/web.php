@@ -31,11 +31,6 @@ use App\Http\Controllers\JobCandidateMilestoneController;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
 function getUserIpAddr()
 {
@@ -93,6 +88,30 @@ Route::get('/job/{id_job}', function($id){
 
     return view('homepage.job_detail', [
         'id' => $id
+    ]);
+});
+
+// Hero search from the homepage.
+Route::post('/jobs', function(Request $request){
+    insertVisitor(getUserIpAddr(), '/jobs');
+    $jobs = activeJobsQuery();
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $jobs->where(function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('type', 'like', "%{$search}%")
+                ->orWhere('salary', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhereHas('jobcategory', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+        });
+    }
+
+    $countJob = (clone $jobs)->count();
+
+    return view('homepage.jobs', [
+        'jobs' => $jobs->paginate(5)->withQueryString(),
+        'count_job' => $countJob
     ]);
 });
 
