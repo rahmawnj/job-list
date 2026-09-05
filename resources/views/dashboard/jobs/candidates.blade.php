@@ -178,6 +178,10 @@
                                                                             <input type="date" name="milestones[{{ $index }}][date]" class="form-control" value="{{ $milestone->date }}">
                                                                         </div>
                                                                         <div class="col-12">
+                                                                            <label class="form-label">Link <span class="text-muted">(optional)</span></label>
+                                                                            <input type="url" name="milestones[{{ $index }}][link]" class="form-control" maxlength="2048" value="{{ $milestone->link }}" placeholder="https://..."><small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
+                                                                        </div>
+                                                                        <div class="col-12">
                                                                             <label class="form-label">Notes</label>
                                                                             <textarea name="milestones[{{ $index }}][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step...">{{ $milestone->notes }}</textarea>
                                                                             <div class="notes-help">
@@ -218,6 +222,10 @@
                                                                         <div class="col-md-5">
                                                                             <label class="form-label">Date</label>
                                                                             <input type="date" name="milestones[0][date]" class="form-control">
+                                                                        </div>
+                                                                        <div class="col-12">
+                                                                            <label class="form-label">Link <span class="text-muted">(optional)</span></label>
+                                                                            <input type="url" name="milestones[0][link]" class="form-control" maxlength="2048" placeholder="https://..."><small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
                                                                         </div>
                                                                         <div class="col-12">
                                                                             <label class="form-label">Notes</label>
@@ -322,6 +330,8 @@
             }
 
             function updateNotesCount(textarea) {
+                if (!textarea) return;
+
                 const counter = textarea.closest('.col-12')?.querySelector('.current-count');
                 if (counter) {
                     counter.textContent = textarea.value.length;
