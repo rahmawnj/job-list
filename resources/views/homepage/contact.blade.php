@@ -205,6 +205,8 @@
     border-radius: 18px;
     padding: 16px 18px;
     margin: 0;
+    min-width: 0;
+    max-width: 100%;
 }
 .contact-info__icon {
     width: 42px;
@@ -220,6 +222,10 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
 }
 .contact-info .media-body {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     color: #374151;
     font-size: 15px;
     line-height: 1.7;
@@ -293,6 +299,22 @@
     }
     .button-contactForm {
         width: 100%;
+    }
+
+    /* Mobile: icon di atas, teks di bawah agar email panjang tidak merusak layout */
+    .contact-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .contact-info__icon {
+        flex-shrink: 0;
+    }
+    .contact-info .media-body {
+        width: 100%;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 }
 </style>
