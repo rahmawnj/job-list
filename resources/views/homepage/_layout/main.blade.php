@@ -85,6 +85,29 @@
                     max-width: 100%;
                     object-fit: contain;
                 }
+
+                /* Job detail: keep the Job Description title above its content card on phones. */
+                .job-post-company .job-post-details .post-details1 {
+                    position: relative;
+                    margin-top: 34px !important;
+                }
+
+                .job-post-company .job-post-details .post-details1 .small-section-tittle {
+                    display: none !important;
+                }
+
+                .job-post-company .job-post-details .post-details1::before {
+                    content: 'Job Description';
+                    position: absolute;
+                    top: -34px;
+                    left: 0;
+                    right: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #1e214e;
+                    line-height: 1.25;
+                    letter-spacing: -0.01em;
+                }
             }
         </style>
    </head>
