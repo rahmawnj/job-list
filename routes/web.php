@@ -107,10 +107,14 @@ Route::get('/jobs', function(Request $request){
     $jobs = activeJobsQuery();
 
     if ($request->filled('job_category')) {
-        $jobs->whereHas('jobcategory', fn ($query) => $query->whereKey($request->job_category));
+        $jobs->where('jobcategory_id', $request->job_category);
     }
-    if ($request->filled('location')) $jobs->where('location_id', $request->location);
-    if ($request->filled('job_type')) $jobs->where('type', $request->job_type);
+    if ($request->filled('location')) {
+        $jobs->where('location_id', $request->location);
+    }
+    if ($request->filled('job_type')) {
+        $jobs->where('type', $request->job_type);
+    }
     if ($request->filled('search')) {
         $search = $request->search;
         $jobs->where(function ($query) use ($search) {
@@ -168,11 +172,17 @@ JS
 });
 
 Route::get('/get-more-jobs', function (Request $request) {
-    if(!$request->ajax()) abort(404);
     $jobs = activeJobsQuery();
-    if ($request->filled('job_category')) $jobs->whereHas('jobcategory', fn ($q) => $q->whereKey($request->job_category));
-    if ($request->filled('location')) $jobs->where('location_id', $request->location);
-    if ($request->filled('job_type')) $jobs->where('type', $request->job_type);
+
+    if ($request->filled('job_category')) {
+        $jobs->where('jobcategory_id', $request->job_category);
+    }
+    if ($request->filled('location')) {
+        $jobs->where('location_id', $request->location);
+    }
+    if ($request->filled('job_type')) {
+        $jobs->where('type', $request->job_type);
+    }
     if ($request->filled('search')) {
         $search = $request->search;
         $jobs->where(function($query) use ($search) {
@@ -183,12 +193,18 @@ Route::get('/get-more-jobs', function (Request $request) {
                 ->orWhereHas('jobcategory', fn ($q) => $q->where('name', 'like', "%{$search}%"));
         });
     }
-    if ($request->sort_by === 'latest') $jobs->orderBy('updated_at', 'desc')->orderBy('created_at', 'desc');
-    elseif ($request->sort_by === 'oldest') $jobs->orderBy('updated_at', 'asc')->orderBy('created_at', 'asc');
+
+    if ($request->sort_by === 'latest') {
+        $jobs->orderBy('updated_at', 'desc')->orderBy('created_at', 'desc');
+    } elseif ($request->sort_by === 'oldest') {
+        $jobs->orderBy('updated_at', 'asc')->orderBy('created_at', 'asc');
+    }
+
+    $countJob = (clone $jobs)->count();
 
     return view('homepage.job_data', [
         'jobs' => $jobs->paginate(5)->withQueryString(),
-        'count_job' => $jobs->count()
+        'count_job' => $countJob
     ])->render();
 })->name('jobs.get-more-jobs');
 
