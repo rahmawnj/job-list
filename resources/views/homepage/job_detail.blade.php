@@ -171,14 +171,19 @@
 
 /* Tombol Apply Custom Youthful */
 .apply-btn2 .btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    height: 58px;
+    box-sizing: border-box;
     background-color: #2a93d5 !important;
     color: #fff !important;
     font-weight: 700;
     border-radius: 16px;
-    padding: 24px 20px;
+    padding: 0 20px;
     text-align: center;
+    line-height: 1 !important;
     box-shadow: 0 8px 20px rgba(42, 147, 213, 0.25);
     transition: all 0.25s ease;
     border: none;
@@ -207,6 +212,7 @@
 .apply-actions .apply-btn2 .btn,
 .job-share-btn {
     width: 100%;
+    height: 58px;
     min-height: 58px;
     box-sizing: border-box;
 }
@@ -215,15 +221,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 24px 20px;
+    padding: 0 20px;
     border: 1.5px solid #2a93d5;
     background: #fff;
     color: #2a93d5;
     border-radius: 16px;
     font-weight: 700;
     font-size: 15px;
-    line-height: 1.2;
+    line-height: 1;
     cursor: pointer;
     text-align: center;
     transition: all 0.25s ease;
@@ -236,7 +241,8 @@
 }
 
 .job-share-btn i {
-    font-size: 14px;
+    font-size: 17px;
+    line-height: 1;
 }
 
 .job-share-status {
@@ -325,22 +331,28 @@
 
     .apply-actions .apply-btn2 .btn,
     .job-share-btn {
+        height: 52px;
         min-height: 52px;
-        padding: 16px 10px;
+        padding: 0 10px;
         font-size: 13px;
     }
 
     .job-share-btn i {
-        font-size: 13px;
+        font-size: 16px;
     }
 }
 
 @media (max-width: 360px) {
     .apply-actions .apply-btn2 .btn,
     .job-share-btn {
+        height: 48px;
         min-height: 48px;
-        padding: 14px 8px;
+        padding: 0 8px;
         font-size: 12px;
+    }
+
+    .job-share-btn i {
+        font-size: 15px;
     }
 
     .job-share-status {
@@ -421,9 +433,9 @@
                             id="job-share-btn"
                             data-share-url="{{ url('/job/' . $id) }}"
                             aria-label="Share this job"
+                            title="Share this job"
                         >
                             <i class="fas fa-share-alt" aria-hidden="true"></i>
-                            <span>Share</span>
                         </button>
                     </div>
                     <div class="job-share-status" id="job-share-status" aria-live="polite"></div>
