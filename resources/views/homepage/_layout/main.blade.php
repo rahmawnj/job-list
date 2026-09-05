@@ -151,6 +151,34 @@
             });
         </script>
 
+        <!-- Add an explicit All option to the Job Type filter on the /jobs page. -->
+        <script>
+            $(function () {
+                if (window.location.pathname.replace(/\/+$/, '') !== '/jobs') {
+                    return;
+                }
+
+                var $typeFilter = $('.jobs-type-filter');
+                if (!$typeFilter.length || $typeFilter.find('input[name="job_type"][value=""]').length) {
+                    return;
+                }
+
+                $typeFilter.prepend(
+                    '<label class="container">All Job Types' +
+                        '<input name="job_type" type="radio" value="" checked>' +
+                        '<span class="checkmark"></span>' +
+                    '</label>'
+                );
+
+                var params = new URLSearchParams(window.location.search);
+                var currentType = params.get('job_type');
+                if (currentType) {
+                    $typeFilter.find('input[name="job_type"][value=""]').prop('checked', false);
+                    $typeFilter.find('input[name="job_type"][value="' + currentType + '"]').prop('checked', true);
+                }
+            });
+        </script>
+
         <script src="{{asset('assets/homepage/js/popper.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/bootstrap.min.js')}}"></script>
 	    <!-- Jquery Mobile Menu -->
