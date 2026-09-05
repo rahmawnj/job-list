@@ -47,17 +47,41 @@ class ContentController extends Controller
                 return collect(explode(',', $value))
                     ->map(fn ($item) => trim($item))
                     ->filter()
+                    ->unique()
+                    ->values()
                     ->implode(',');
             };
 
+            $ensureDefaults = function ($value, array $defaults) use ($normalize) {
+                $items = array_filter(explode(',', $normalize($value)));
+
+                foreach ($defaults as $default) {
+                    if (! in_array($default, $items, true)) {
+                        $items[] = $default;
+                    }
+                }
+
+                return implode(',', $items);
+            };
+
+            $milestoneSteps = $ensureDefaults(
+                $validatedData['milestone_steps'],
+                ['send_resume', 'interview_1', 'interview_2', 'mcu', 'offering', 'joint']
+            );
+
+            $milestoneStatuses = $ensureDefaults(
+                $validatedData['milestone_statuses'],
+                ['pending', 'active', 'completed']
+            );
+
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STEPS'],
-                ['description' => $normalize($validatedData['milestone_steps'])]
+                ['description' => $milestoneSteps]
             );
 
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STATUSES'],
-                ['description' => $normalize($validatedData['milestone_statuses'])]
+                ['description' => $milestoneStatuses]
             );
 
             return redirect('/dashboard/content?tab=setting')->with('success', 'Settings have been updated');
