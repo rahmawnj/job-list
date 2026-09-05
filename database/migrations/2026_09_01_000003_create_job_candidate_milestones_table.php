@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->date('date')->nullable();
             $table->text('notes')->nullable();
+            $table->string('link')->nullable();
             $table->timestamps();
         });
     }
