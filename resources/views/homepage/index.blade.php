@@ -381,9 +381,10 @@
 }
 
 .job-filter-card {
+    display: none !important;
     position: relative;
-    z-index: 100 !important; /* Memastikan kartu filter berada di lapisan teratas */
-    overflow: visible !important; /* Mencegah opsi dropdown terpotong */
+    z-index: 100 !important;
+    overflow: visible !important;
     padding-top: 28px !important;
     padding-bottom: 28px !important;
     margin-top: 36px !important;
@@ -502,7 +503,7 @@
 
 .job-filter-select {
     position: relative;
-    z-index: 102 !important; /* Menempatkan elemen select paling tinggi */
+    z-index: 102 !important;
     display: block;
     width: 100%;
     height: 52px;
