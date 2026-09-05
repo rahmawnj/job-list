@@ -21,7 +21,7 @@
                             </p>
                             <div class="hero-social d-flex justify-content-center align-items-center">
                                 @foreach (\App\Models\Mediasocial::where('status', 'active')->get() as $mediasocial)
-                                    <a class="about-hero-social-icon text-white mx-2" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
+                                    <a class="site-social-link about-hero-social-icon mx-2" title="{{ $mediasocial->name }}" href="{{ $mediasocial->link }}" target="_blank" rel="noopener noreferrer">
                                         <i class="fa-brands fa-{{ $mediasocial->icon }}"></i>
                                     </a>
                                 @endforeach
@@ -128,25 +128,39 @@
         }
 
         .about-hero-social-icon {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            color: #ffffff !important;
-            background: transparent;
-            font-size: 30px;
+            border-radius: 12px;
+            color: #1d2d5c !important;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(29, 45, 92, 0.12);
+            font-size: 18px;
             text-decoration: none;
-            transition: transform 0.25s ease, color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+            transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            box-sizing: border-box;
+        }
+
+        .about-hero-social-icon i {
+            color: inherit !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1em;
+            height: 1em;
+            line-height: 1;
+            margin: 0;
         }
 
         .about-hero-social-icon:hover,
         .about-hero-social-icon:focus-visible {
-            color: #1d2d5c !important;
-            background: #ffffff;
+            color: #ffffff !important;
+            background: #1d2d5c;
+            border-color: #1d2d5c;
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 10px 20px rgba(29, 45, 92, 0.18);
             text-decoration: none;
         }
 
@@ -214,7 +228,7 @@
             .about-hero-social-icon {
                 width: 42px;
                 height: 42px;
-                font-size: 25px;
+                font-size: 18px;
             }
         }
     </style>
