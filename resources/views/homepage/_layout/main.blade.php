@@ -13,6 +13,8 @@
         <link href="{{asset('assets/plugins/fontawesome/css/all.css')}}" rel="stylesheet" />
         <link rel="stylesheet" href="{{asset('assets/homepage/css/bootstrap.min.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/owl.carousel.min.css')}}">
+        <link rel="stylesheet" href="{{asset('assets/homepage/css/owl.carousel.min.css')}}">
+        <link rel="stylesheet" href="{{asset('assets/homepage/css/flaticon.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/price_rangs.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/slicknav.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/animate.min.css')}}">
