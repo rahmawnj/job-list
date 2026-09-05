@@ -23,15 +23,12 @@ class JobCandidateMilestoneController extends Controller
         $rawMilestones = [];
 
         foreach ($inputMilestones as $group) {
-            if (
-                is_array($group) &&
-                (
-                    array_key_exists('step', $group) ||
-                    array_key_exists('date', $group) ||
-                    array_key_exists('notes', $group) ||
-                    array_key_exists('status', $group)
-                )
-            ) {
+            if (is_array($group) && (
+                array_key_exists('step', $group) ||
+                array_key_exists('date', $group) ||
+                array_key_exists('notes', $group) ||
+                array_key_exists('status', $group)
+            )) {
                 $rawMilestones[] = $group;
                 continue;
             }
@@ -55,31 +52,22 @@ class JobCandidateMilestoneController extends Controller
         }
 
         $validator = Validator::make(
-            [
-                'milestones' => array_values($rawMilestones),
-            ],
+            ['milestones' => array_values($rawMilestones)],
             [
                 'milestones' => 'nullable|array',
                 'milestones.*' => 'array',
                 'milestones.*.step' => [
-                    'nullable',
+                    'required',
                     'string',
                     Rule::in(config('milestones.steps')),
                 ],
                 'milestones.*.status' => [
-                    'nullable',
+                    'required',
                     'string',
                     Rule::in(config('milestones.statuses')),
                 ],
-                'milestones.*.date' => [
-                    'nullable',
-                    'date',
-                ],
-                'milestones.*.notes' => [
-                    'nullable',
-                    'string',
-                    'max:500',
-                ],
+                'milestones.*.date' => ['nullable', 'date'],
+                'milestones.*.notes' => ['nullable', 'string', 'max:500'],
             ]
         );
 
@@ -97,28 +85,13 @@ class JobCandidateMilestoneController extends Controller
         $jobCandidate->milestones()->delete();
 
         foreach ($milestones as $milestone) {
-            if (!is_array($milestone)) {
-                continue;
-            }
-
-            $step = $milestone['step'] ?? null;
-
             $jobCandidate->milestones()->create([
-                'step' => $step,
-                'status' => $milestone['status'] ?? null,
+                'step' => $milestone['step'],
+                'status' => $milestone['status'],
                 'date' => $milestone['date'] ?? null,
                 'notes' => $milestone['notes'] ?? null,
             ]);
         }
-
-        $latestMilestone = collect($milestones)
-            ->filter(fn ($milestone) => is_array($milestone))
-            ->last();
-
-        $jobCandidate->update([
-            'step' => $latestMilestone['step'] ?? null,
-            'status' => $latestMilestone['status'] ?? null,
-        ]);
 
         return redirect()
             ->route('admin.job.candidates', $job->id)
