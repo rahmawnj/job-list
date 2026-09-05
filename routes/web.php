@@ -52,36 +52,28 @@ function activeJobsQuery()
         ->orderBy('id', 'desc');
 }
 
-function appendJobsFilterScript($html, $script)
-{
-    $tag = '<script>' . $script . '</script>';
-    if (stripos($html, '</body>') !== false) return preg_replace('/<\/body>/i', $tag . '</body>', $html, 1);
-    return $html . $tag;
-}
-
 Route::get('/', function(){
     insertVisitor(getUserIpAddr(), '/home');
     $jobs = activeJobsQuery();
     $topCategories = Jobcategory::where('is_top_category', true)->whereNotNull('logo')->get(['id', 'name']);
-    $categoryMap = $topCategories->mapWithKeys(fn ($category) => [$category->name => $category->id]);
     $html = view('homepage.index', ['jobs' => $jobs->paginate(5), 'count_job' => $jobs->count()])->render();
-    $categoryMapJson = json_encode($categoryMap, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-    return appendJobsFilterScript($html, <<<JS
-(function () {
-    var topCategoryMap = {$categoryMapJson};
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.single-services').forEach(function (card) {
-            var title = card.querySelector('h5');
-            var link = card.closest('a');
-            if (!title || !link) return;
-            var categoryId = topCategoryMap[title.textContent.trim()];
-            if (categoryId) link.href = '/jobs?job_category=' + encodeURIComponent(categoryId);
-        });
-    });
-})();
-JS
-    );
+    // Top Categories: server-side links, no JavaScript.
+    $categoryIndex = 0;
+    $html = preg_replace_callback('/<a href="\/jobs" class="text-decoration-none">/', function ($match) use (&$categoryIndex, $topCategories) {
+        $category = $topCategories->values()->get($categoryIndex++);
+        if (!$category) return $match[0];
+        return '<a href="/jobs?job_category=' . urlencode($category->id) . '" class="text-decoration-none">';
+    }, $html);
+
+    // Home search/filter forms use normal GET requests handled by PHP.
+    $html = str_replace('<form action="/jobs" method="post">', '<form action="/jobs" method="GET">', $html);
+    $html = str_replace('<div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">', '<form action="/jobs" method="GET"><div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">', $html);
+    $html = str_replace('<select class="job-filter-select" data-picker id="job_category" name="select">', '<select class="job-filter-select" data-picker id="job_category" name="job_category">', $html);
+    $html = str_replace('<select class="job-filter-select" data-picker id="location" name="select">', '<select class="job-filter-select" data-picker id="location" name="location">', $html);
+    $html = str_replace('</div>\n\n                <div id="job_data" style="position: relative; z-index: 1;">', '</div><div class="text-center mt-3"><button type="submit" class="btn px-4 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div></div></form>\n\n                <div id="job_data" style="position: relative; z-index: 1;">', $html);
+
+    return $html;
 });
 
 Route::get('/home', fn () => redirect('/'));
@@ -89,17 +81,6 @@ Route::get('/home', fn () => redirect('/'));
 Route::get('/job/{id_job}', function($id){
     insertVisitor(getUserIpAddr(), '/job_detail');
     return view('homepage.job_detail', ['id' => $id]);
-});
-
-Route::post('/jobs', function(Request $request){
-    $jobs = activeJobsQuery()->where(function($query) use ($request){
-        $query->where('title', 'like', "%{$request->search}%")
-            ->orWhere('type', 'like', "%{$request->search}%")
-            ->orWhere('salary', 'like', "%{$request->search}%")
-            ->orWhere('description', 'like', "%{$request->search}%")
-            ->orWhereHas('jobcategory', fn ($q) => $q->where('name', 'like', "%{$request->search}%"));
-    });
-    return view('homepage.jobs', ['jobs' => $jobs->paginate(5), 'count_job' => $jobs->count()]);
 });
 
 Route::get('/jobs', function(Request $request){
@@ -126,49 +107,50 @@ Route::get('/jobs', function(Request $request){
         });
     }
 
+    if ($request->sort_by === 'latest') {
+        $jobs->orderBy('updated_at', 'desc')->orderBy('created_at', 'desc');
+    } elseif ($request->sort_by === 'oldest') {
+        $jobs->orderBy('updated_at', 'asc')->orderBy('created_at', 'asc');
+    }
+
     $countJob = (clone $jobs)->count();
     $html = view('homepage.jobs', ['jobs' => $jobs->paginate(5)->withQueryString(), 'count_job' => $countJob])->render();
-    $jobCategory = addslashes($request->query('job_category', ''));
 
-    return appendJobsFilterScript($html, <<<JS
-(function () {
-    var initialJobCategory = "{$jobCategory}";
-    document.addEventListener('DOMContentLoaded', function () {
-        if (!initialJobCategory) return;
-        var categorySelect = document.getElementById('job_category');
-        if (!categorySelect) return;
-        categorySelect.value = initialJobCategory;
-        if (window.jQuery) window.jQuery(categorySelect).trigger('change');
-    });
-})();
+    // Convert the existing jobs filter form to a normal PHP GET form.
+    $html = str_replace('<form action="" class="jobs-filter-form">', '<form action="/jobs" method="GET" class="jobs-filter-form">', $html);
+    $html = str_replace('<select id="location" name="select" data-picker>', '<select id="location" name="location" data-picker>', $html);
+    $html = str_replace('<select id="job_category" name="select" data-picker>', '<select id="job_category" name="job_category" data-picker>', $html);
+    $html = str_replace('<select id="sort_by" name="select">', '<select id="sort_by" name="sort_by">', $html);
+    $html = str_replace('</div>\n                    </form>', '</div>\n                        <button type="submit" class="btn w-100 mt-4" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button>\n                    </form>', $html);
 
-(function () {
-    function enableRadioUncheck() {
-        if (!window.jQuery) return;
-        window.jQuery(document)
-            .off('click.jobsTypeUncheck', '.jobs-type-filter input[name="job_type"]')
-            .on('click.jobsTypeUncheck', '.jobs-type-filter input[name="job_type"]', function (event) {
-                var radio = this;
-                if (radio.dataset.wasChecked === 'true') {
-                    event.preventDefault();
-                    radio.checked = false;
-                    radio.dataset.wasChecked = 'false';
-                    window.jQuery(radio).trigger('change');
-                    return;
-                }
-                document.querySelectorAll('.jobs-type-filter input[name="job_type"]').forEach(function (item) {
-                    item.dataset.wasChecked = item === radio ? 'true' : 'false';
-                });
-            });
-        window.jQuery('.jobs-type-filter input[name="job_type"]').each(function () {
-            this.dataset.wasChecked = this.checked ? 'true' : 'false';
-        });
+    // Keep current values visible after a PHP GET submission.
+    $searchValue = e($request->query('search', ''));
+    $html = preg_replace('/(<input class="form-control" name="search" id="search" type="search"[^>]*)(>)/', '$1 value="' . $searchValue . '"$2', $html, 1);
+    $locationValue = (string) $request->query('location', '');
+    $categoryValue = (string) $request->query('job_category', '');
+    $html = preg_replace('/(<select id="location" name="location" data-picker>)/', '$1', $html, 1);
+    $html = preg_replace('/(<select id="job_category" name="job_category" data-picker>)/', '$1', $html, 1);
+
+    // Mark selected options server-side.
+    if ($locationValue !== '') {
+        $pattern = '/(<select id="location" name="location" data-picker>.*?<option value="' . preg_quote($locationValue, '/') . '")/s';
+        $html = preg_replace($pattern, '$1 selected', $html, 1);
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enableRadioUncheck);
-    else enableRadioUncheck();
-})();
-JS
-    );
+    if ($categoryValue !== '') {
+        $pattern = '/(<select id="job_category" name="job_category" data-picker>.*?<option value="' . preg_quote($categoryValue, '/') . '")/s';
+        $html = preg_replace($pattern, '$1 selected', $html, 1);
+    }
+
+    $jobType = (string) $request->query('job_type', '');
+    if ($jobType !== '') {
+        $html = preg_replace('/(<input name="job_type" type="radio" value="' . preg_quote($jobType, '/') . '")/', '$1 checked', $html, 1);
+    }
+    $sortBy = (string) $request->query('sort_by', '');
+    if ($sortBy !== '') {
+        $html = preg_replace('/(<select id="sort_by" name="sort_by">.*?<option value="' . preg_quote($sortBy, '/') . '")/s', '$1 selected', $html, 1);
+    }
+
+    return $html;
 });
 
 Route::get('/get-more-jobs', function (Request $request) {
