@@ -13,7 +13,6 @@
         <link href="{{asset('assets/plugins/fontawesome/css/all.css')}}" rel="stylesheet" />
         <link rel="stylesheet" href="{{asset('assets/homepage/css/bootstrap.min.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/owl.carousel.min.css')}}">
-        <link rel="stylesheet" href="{{asset('assets/homepage/css/flaticon.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/price_rangs.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/slicknav.css')}}">
         <link rel="stylesheet" href="{{asset('assets/homepage/css/animate.min.css')}}">
@@ -48,7 +47,6 @@
             }
 
             @media (max-width: 767px) {
-                /* Top Categories: two columns on phones = 2 x 2 for four cards. */
                 .our-services .row > .col-xl-3,
                 .our-services .row > .col-lg-3,
                 .our-services .row > .col-md-4,
@@ -70,7 +68,6 @@
                     padding: 16px 10px !important;
                 }
 
-                /* Hide category names on mobile, keep the logo/card only. */
                 .our-services .services-cap {
                     display: none !important;
                 }
@@ -84,29 +81,6 @@
                     height: 48px !important;
                     max-width: 100%;
                     object-fit: contain;
-                }
-
-                /* Job detail: keep the Job Description title above its content card on phones. */
-                .job-post-company .job-post-details .post-details1 {
-                    position: relative;
-                    margin-top: 34px !important;
-                }
-
-                .job-post-company .job-post-details .post-details1 .small-section-tittle {
-                    display: none !important;
-                }
-
-                .job-post-company .job-post-details .post-details1::before {
-                    content: 'Job Description';
-                    position: absolute;
-                    top: -34px;
-                    left: 0;
-                    right: 0;
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1e214e;
-                    line-height: 1.25;
-                    letter-spacing: -0.01em;
                 }
 
                 /* Mobile job cards: move the company image above the job information and center it. */
@@ -163,7 +137,6 @@
         <script src="{{asset('assets/dashboard/plugins/select-picker/dist/picker.min.js')}}"></script>
         @stack('scripts')
 
-        <!-- Bridge select-picker's custom event to the normal jQuery change event used by page filters -->
         <script>
             $(function () {
                 $(document).on('sp-change', '.job-filter-card .job-filter-select', function () {
@@ -172,7 +145,6 @@
             });
         </script>
 
-        <!-- Top category cards on the homepage open the jobs page with the selected category applied. -->
         <script>
             $(function () {
                 var topCategoryMap = @json(\App\Models\Jobcategory::where('is_top_category', true)->pluck('id', 'name'));
@@ -190,7 +162,6 @@
             });
         </script>
 
-        <!-- The jobs page uses a normal GET filter form and regular pagination, not AJAX. -->
         <script>
             $(function () {
                 if (window.location.pathname.replace(/\/+$/, '') !== '/jobs') {
@@ -202,7 +173,6 @@
                     return;
                 }
 
-                // Disable the legacy AJAX handlers defined in homepage/jobs.blade.php.
                 $(document).off('click', '.pagination a');
                 $('#search').off('keyup');
                 $('#sort_by').off('change');
@@ -210,12 +180,10 @@
                 $('#job_category').off('change');
                 $('#location').off('change');
 
-                // Make the existing filter controls submit to the normal /jobs GET route.
                 $form.attr('action', '/jobs').attr('method', 'GET');
                 $('#location').attr('name', 'location');
                 $('#job_category').attr('name', 'job_category');
 
-                // Keep the current filter values when the page is reloaded from a filter/pagination URL.
                 var params = new URLSearchParams(window.location.search);
                 var locationValue = params.get('location') || '';
                 var categoryValue = params.get('job_category') || '';
@@ -234,7 +202,6 @@
                     );
                 }
 
-                // Sort is also a normal page navigation, never an AJAX request.
                 $('#sort_by').on('change', function () {
                     var url = new URL('/jobs', window.location.origin);
 
@@ -256,7 +223,6 @@
             });
         </script>
 
-        <!-- Add an explicit All option to the Job Type filter on the /jobs page. -->
         <script>
             $(function () {
                 if (window.location.pathname.replace(/\/+$/, '') !== '/jobs') {
@@ -286,32 +252,21 @@
 
         <script src="{{asset('assets/homepage/js/popper.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/bootstrap.min.js')}}"></script>
-	    <!-- Jquery Mobile Menu -->
-        <script src="{{asset('assets/homepage/js/jquery.slicknav.min.js')}}"></script>
-
-		<!-- Jquery Slick , Owl-Carousel Plugins -->
+	    <script src="{{asset('assets/homepage/js/jquery.slicknav.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/owl.carousel.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/slick.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/price_rangs.js')}}"></script>
-        
-		<!-- One Page, Animated-HeadLin -->
         <script src="{{asset('assets/homepage/js/wow.min.js')}}"></script>
 		<script src="{{asset('assets/homepage/js/animated.headline.js')}}"></script>
         <script src="{{asset('assets/homepage/js/jquery.magnific-popup.js')}}"></script>
-
-		<!-- Scrollup, nice-select, sticky -->
         <script src="{{asset('assets/homepage/js/jquery.scrollUp.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/jquery.nice-select.min.js')}}"></script>
 		<script src="{{asset('assets/homepage/js/jquery.sticky.js')}}"></script>
-        
-        <!-- contact js -->
         <script src="{{asset('assets/homepage/js/contact.js')}}"></script>
         <script src="{{asset('assets/homepage/js/jquery.form.js')}}"></script>
         <script src="{{asset('assets/homepage/js/jquery.validate.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/mail-script.js')}}"></script>
         <script src="{{asset('assets/homepage/js/jquery.ajaxchimp.min.js')}}"></script>
-        
-		<!-- Jquery Plugins, main Jquery -->	
         <script src="{{asset('assets/homepage/js/plugins.js')}}"></script>
         <script src="{{asset('assets/homepage/js/main.js')}}"></script>
 
