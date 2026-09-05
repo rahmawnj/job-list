@@ -105,6 +105,63 @@
                 }
             }
         </style>
+        <style>
+            /* Refined mobile hero typography: clear visual hierarchy without oversized text. */
+            @media (max-width: 767px) {
+                .hero-home-overlay .hero__caption {
+                    width: 100%;
+                    max-width: 100%;
+                    padding: 0 18px;
+                }
+
+                .hero__caption .hero-title-main {
+                    margin-bottom: 10px !important;
+                    font-size: clamp(28px, 8vw, 36px) !important;
+                    line-height: 1.08 !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.035em;
+                    max-width: 100%;
+                    overflow-wrap: break-word;
+                }
+
+                .hero__caption .hero-title-sub {
+                    margin-bottom: 10px !important;
+                    font-size: clamp(18px, 5vw, 23px) !important;
+                    line-height: 1.22 !important;
+                    font-weight: 600 !important;
+                    letter-spacing: -0.015em;
+                    max-width: 92%;
+                    overflow-wrap: break-word;
+                }
+
+                .hero__caption .hero-description {
+                    font-size: clamp(13px, 3.7vw, 16px) !important;
+                    line-height: 1.55 !important;
+                    font-weight: 400 !important;
+                    max-width: 92%;
+                    overflow-wrap: break-word;
+                }
+            }
+
+            @media (max-width: 380px) {
+                .hero-home-overlay .hero__caption {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                }
+
+                .hero__caption .hero-title-main {
+                    font-size: 27px !important;
+                }
+
+                .hero__caption .hero-title-sub {
+                    font-size: 17px !important;
+                }
+
+                .hero__caption .hero-description {
+                    font-size: 12.5px !important;
+                }
+            }
+        </style>
    </head>
 
    <body>
