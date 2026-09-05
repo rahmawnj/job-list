@@ -372,10 +372,10 @@
         max-width: 100%;
     }
 
-    .job-post-company .job-post-details {
+    /* .job-post-company .job-post-details {
         display: flex;
         flex-direction: column;
-    }
+    } */
 
     .job-post-company .job-post-details .post-details2 {
         order: 1;
