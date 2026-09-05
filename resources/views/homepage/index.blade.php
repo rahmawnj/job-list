@@ -39,8 +39,8 @@
                                 <div class="input-group input-group-lg shadow-sm search-hero-wrap" style="border-radius: 50px; overflow: hidden; background: #fff;">
                                     <input id="search" type="text" class="form-control border-0 px-4 py-3 search-hero-input" name="search" placeholder="Job Title or keyword..." aria-label="Job Title or keyword" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" formnovalidate="formnovalidate" style="box-shadow: none; font-size: 16px;">
                                     <div class="input-group-append">
-                                        <button style="background-color: #2a93d5; color: white; border: none; font-size: 14px;" type="submit" class="btn px-3 h-100 d-flex align-items-center gap-2" id="inputGroup-sizing">
-                                            <i class="fa fa-search" aria-hidden="true"></i><span class="find-job-label"> Find Job</span>
+                                        <button style="background-color: #2a93d5; color: white; border: none; font-size: 14px;" type="submit" class="btn px-3 h-100 d-flex align-items-center" id="inputGroup-sizing" aria-label="Find Job">
+                                            <i class="fa fa-search" aria-hidden="true"></i><span class="find-job-label">Find Job</span>
                                         </button>
                                     </div>
                                 </div>
@@ -335,6 +335,16 @@
     outline: none;
 }
 
+.search-hero-wrap button {
+    gap: 8px;
+    justify-content: center;
+    min-width: 108px;
+}
+
+.find-job-label {
+    display: inline;
+}
+
 .job-filter-card {
     position: relative;
     z-index: 100 !important;
@@ -449,6 +459,18 @@
         width: 38px;
         height: 38px;
         font-size: 19px;
+    }
+
+    .search-hero-wrap button {
+        width: 52px;
+        min-width: 52px;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        gap: 0;
+    }
+
+    .find-job-label {
+        display: none;
     }
 
     .job-filter-card {
