@@ -22,19 +22,10 @@ class ContentController extends Controller
                 ['description' => '']
             );
 
-            // Remove the old hard-coded defaults from earlier versions.
-            if ($milestoneSteps->description === 'send_resume,interview_1,interview_2,mcu,offering,joint') {
-                $milestoneSteps->update(['description' => '']);
-            }
-
-            if ($milestoneStatuses->description === 'pending,active,completed') {
-                $milestoneStatuses->update(['description' => '']);
-            }
-
             return view('dashboard.settings.index', [
                 'title' => 'Setting',
-                'milestoneSteps' => $milestoneSteps->fresh(),
-                'milestoneStatuses' => $milestoneStatuses->fresh(),
+                'milestoneSteps' => $milestoneSteps,
+                'milestoneStatuses' => $milestoneStatuses,
             ]);
         }
 
@@ -53,7 +44,7 @@ class ContentController extends Controller
             ]);
 
             $normalize = function ($value) {
-                return collect(explode(',', $value ?? ''))
+                return collect(explode(',', (string) $value))
                     ->map(fn ($item) => trim($item))
                     ->filter()
                     ->unique()
@@ -61,14 +52,17 @@ class ContentController extends Controller
                     ->implode(',');
             };
 
+            $milestoneSteps = $normalize($validatedData['milestone_steps'] ?? '');
+            $milestoneStatuses = $normalize($validatedData['milestone_statuses'] ?? '');
+
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STEPS'],
-                ['description' => $normalize($validatedData['milestone_steps'] ?? '')]
+                ['description' => $milestoneSteps]
             );
 
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STATUSES'],
-                ['description' => $normalize($validatedData['milestone_statuses'] ?? '')]
+                ['description' => $milestoneStatuses]
             );
 
             return redirect('/dashboard/content?tab=setting')->with('success', 'Settings have been updated');
