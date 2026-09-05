@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Models\Content;
 use App\Models\Job;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -49,7 +48,6 @@ class AppServiceProvider extends ServiceProvider
         // Inject shared SEO metadata into the existing @stack('meta') of the public layout.
         if (!app()->runningInConsole()) {
             view()->composer('homepage._layout.main', function () {
-                $path = trim(request()->path(), '/');
                 $canonicalUrl = url('/');
                 $title = 'Job Vacancies & Career Opportunities';
                 $description = 'Find current job vacancies, career opportunities, and professional roles. Search openings by category, location, and employment type.';
@@ -130,25 +128,23 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
-                Blade::directive('sharedSeoMeta', function () {
-                    return '<?php echo ""; ?>';
-                });
+                $seoHtml = implode('', [
+                    '<meta name="robots" content="' . e($robots) . '">',
+                    '<link rel="canonical" href="' . e($canonicalUrl) . '">',
+                    '<meta property="og:type" content="' . e($ogType) . '">',
+                    '<meta property="og:title" content="' . e($title) . '">',
+                    '<meta property="og:description" content="' . e($description) . '">',
+                    '<meta property="og:url" content="' . e($canonicalUrl) . '">',
+                    '<meta property="og:image" content="' . e($ogImage) . '">',
+                    '<meta property="og:site_name" content="Job Opportunities">',
+                    '<meta name="twitter:card" content="summary_large_image">',
+                    '<meta name="twitter:title" content="' . e($title) . '">',
+                    '<meta name="twitter:description" content="' . e($description) . '">',
+                    '<meta name="twitter:image" content="' . e($ogImage) . '">',
+                    '<script type="application/ld+json">' . json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>',
+                ]);
 
-                view()->startPush('meta');
-                echo '<meta name="robots" content="' . e($robots) . '">';
-                echo '<link rel="canonical" href="' . e($canonicalUrl) . '">';
-                echo '<meta property="og:type" content="' . e($ogType) . '">';
-                echo '<meta property="og:title" content="' . e($title) . '">';
-                echo '<meta property="og:description" content="' . e($description) . '">';
-                echo '<meta property="og:url" content="' . e($canonicalUrl) . '">';
-                echo '<meta property="og:image" content="' . e($ogImage) . '">';
-                echo '<meta property="og:site_name" content="Job Opportunities">';
-                echo '<meta name="twitter:card" content="summary_large_image">';
-                echo '<meta name="twitter:title" content="' . e($title) . '">';
-                echo '<meta name="twitter:description" content="' . e($description) . '">';
-                echo '<meta name="twitter:image" content="' . e($ogImage) . '">';
-                echo '<script type="application/ld+json">' . json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
-                view()->stopPush();
+                view()->startPush('meta', $seoHtml);
             });
         }
     }
