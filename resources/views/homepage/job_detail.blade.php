@@ -49,6 +49,7 @@
     display: flex;
     align-items: center;
     width: 100%;
+    min-width: 0;
 }
 
 .job-post-company .company-img {
@@ -78,12 +79,14 @@
 }
 
 .job-post-company .job-tittle {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     padding-left: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: left;
+    overflow: hidden;
 }
 
 .job-post-company .job-tittle h4 {
@@ -93,6 +96,9 @@
     color: #1e214e;
     line-height: 1.25;
     letter-spacing: -0.02em;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .job-post-company .job-tittle ul {
@@ -105,17 +111,23 @@
     list-style: none;
     color: #64748b;
     font-size: 15px;
+    min-width: 0;
 }
 
 .job-post-company .job-tittle ul li {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .job-post-company .job-tittle ul li i {
     color: #94a3b8;
     font-size: 14px;
+    flex-shrink: 0;
 }
 
 /* Kotak Detail Konten (Deskripsi & Requirement) */
@@ -278,25 +290,44 @@
     .post-details3 {
         padding: 18px;
     }
+
     .job-post-company .company-img {
         width: 65px;
         min-width: 65px;
         height: 65px;
         border-radius: 16px;
     }
+
     .job-post-company .company-img img {
         width: 48px;
         height: 48px;
     }
+
+    .job-post-company .job-items {
+        align-items: flex-start;
+    }
+
     .job-post-company .job-tittle {
-        padding-left: 14px;
+        min-width: 0;
+        padding-left: 12px;
     }
+
     .job-post-company .job-tittle h4 {
-        font-size: 17px;
+        font-size: 16px;
+        line-height: 1.3;
+        margin-bottom: 8px;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
+
     .job-post-company .job-tittle ul {
-        font-size: 13px;
-        gap: 6px 12px;
+        font-size: 12px;
+        gap: 6px 10px;
+    }
+
+    .job-post-company .job-tittle ul li {
+        max-width: 100%;
     }
 
     .post-details3 ul li {
@@ -383,6 +414,15 @@
 }
 
 @media (max-width: 360px) {
+    .job-post-company .job-tittle h4 {
+        font-size: 15px;
+    }
+
+    .job-post-company .job-tittle ul {
+        font-size: 11px;
+        gap: 5px 8px;
+    }
+
     .apply-actions .job-share-btn {
         flex-basis: 48px;
         width: 48px;
