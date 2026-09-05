@@ -15,43 +15,14 @@ class JobCandidateMilestoneController extends Controller
         Job $job,
         JobCandidate $jobCandidate
     ) {
-        // Pastikan candidate memang milik job yang dipilih
         if ($jobCandidate->job_id !== $job->id) {
             abort(404);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Ambil data milestones
-        |--------------------------------------------------------------------------
-        |
-        | Data yang masuk bisa berbentuk:
-        |
-        | milestones[4][0][step]
-        | milestones[4][0][date]
-        | milestones[4][0][notes]
-        |
-        | atau:
-        |
-        | milestones[0][step]
-        | milestones[0][date]
-        | milestones[0][notes]
-        |
-        */
-
         $inputMilestones = $request->input('milestones', []);
-
         $rawMilestones = [];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Normalisasi struktur milestones
-        |--------------------------------------------------------------------------
-        */
-
         foreach ($inputMilestones as $group) {
-
-            // Jika langsung berupa milestone
             if (
                 is_array($group) &&
                 (
@@ -65,20 +36,12 @@ class JobCandidateMilestoneController extends Controller
                 continue;
             }
 
-            // Jika berupa group seperti:
-            // 4 => [
-            //     0 => [
-            //         'step' => ...
-            //     ]
-            // ]
             if (is_array($group)) {
                 foreach ($group as $milestone) {
-
                     if (!is_array($milestone)) {
                         continue;
                     }
 
-                    // Jika masih nested, cek lagi
                     if (
                         array_key_exists('step', $milestone) ||
                         array_key_exists('date', $milestone) ||
@@ -91,21 +54,13 @@ class JobCandidateMilestoneController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi
-        |--------------------------------------------------------------------------
-        */
-
         $validator = Validator::make(
             [
                 'milestones' => array_values($rawMilestones),
             ],
             [
                 'milestones' => 'nullable|array',
-
                 'milestones.*' => 'array',
-
                 'milestones.*.step' => [
                     'nullable',
                     'string',
@@ -116,24 +71,17 @@ class JobCandidateMilestoneController extends Controller
                     'string',
                     Rule::in(config('milestones.statuses')),
                 ],
-
                 'milestones.*.date' => [
                     'nullable',
                     'date',
                 ],
-
                 'milestones.*.notes' => [
                     'nullable',
                     'string',
+                    'max:500',
                 ],
             ]
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Jika validasi gagal
-        |--------------------------------------------------------------------------
-        */
 
         if ($validator->fails()) {
             return redirect()
@@ -143,65 +91,37 @@ class JobCandidateMilestoneController extends Controller
                 ->with('open_milestone_modal', $jobCandidate->id);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Ambil data yang sudah tervalidasi
-        |--------------------------------------------------------------------------
-        */
-
         $validated = $validator->validated();
-
         $milestones = $validated['milestones'] ?? [];
-
-        /*
-        |--------------------------------------------------------------------------
-        | Hapus milestone lama
-        |--------------------------------------------------------------------------
-        */
 
         $jobCandidate->milestones()->delete();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Simpan milestone baru
-        |--------------------------------------------------------------------------
-        */
-
         foreach ($milestones as $milestone) {
-
             if (!is_array($milestone)) {
                 continue;
             }
 
-            $step = $milestone['step'] ?? 'send_resume';
-
-            if ($step === null || $step === '') {
-                $step = 'send_resume';
-            }
+            $step = $milestone['step'] ?? null;
 
             $jobCandidate->milestones()->create([
                 'step' => $step,
-                'status' => $milestone['status'] ?? 'pending',
+                'status' => $milestone['status'] ?? null,
                 'date' => $milestone['date'] ?? null,
                 'notes' => $milestone['notes'] ?? null,
             ]);
         }
 
-        $latestMilestone = collect($milestones)->filter(fn ($milestone) => is_array($milestone))->last();
-        $jobCandidate->update([
-            'step' => $latestMilestone['step'] ?? $jobCandidate->step,
-            'status' => $latestMilestone['status'] ?? $jobCandidate->status ?? 'pending',
-        ]);
+        $latestMilestone = collect($milestones)
+            ->filter(fn ($milestone) => is_array($milestone))
+            ->last();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Selesai
-        |--------------------------------------------------------------------------
-        */
+        $jobCandidate->update([
+            'step' => $latestMilestone['step'] ?? null,
+            'status' => $latestMilestone['status'] ?? null,
+        ]);
 
         return redirect()
             ->route('admin.job.candidates', $job->id)
             ->with('success', 'Milestone updated.');
     }
-
 }
