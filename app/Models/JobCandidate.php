@@ -10,7 +10,10 @@ class JobCandidate extends Model
     use HasFactory;
 
     protected $table = 'job_candidates';
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'job_id',
+        'candidate_id',
+    ];
 
     public function job()
     {
@@ -20,10 +23,5 @@ class JobCandidate extends Model
     public function candidate()
     {
         return $this->belongsTo(Candidate::class);
-    }
-
-    public function milestones()
-    {
-        return $this->hasMany(JobCandidateMilestone::class)->orderBy('date', 'asc');
     }
 }
