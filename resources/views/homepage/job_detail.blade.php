@@ -190,6 +190,63 @@
     box-shadow: 0 12px 24px rgba(42, 147, 213, 0.35);
 }
 
+/* Action buttons: Apply + Share */
+.apply-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+}
+
+.apply-actions .apply-btn2,
+.apply-actions .job-share-btn {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.apply-actions .apply-btn2 .btn,
+.job-share-btn {
+    width: 100%;
+    min-height: 58px;
+    box-sizing: border-box;
+}
+
+.job-share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 20px;
+    border: 1.5px solid #2a93d5;
+    background: #fff;
+    color: #2a93d5;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.2;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+}
+
+.job-share-btn:hover {
+    background: #f0f7ff;
+    color: #1f82c4;
+    border-color: #1f82c4;
+}
+
+.job-share-btn i {
+    font-size: 14px;
+}
+
+.job-share-status {
+    min-height: 20px;
+    padding-top: 8px;
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+}
+
 /* Responsive Mobile Styles */
 @media (max-width: 767px) {
     .job-post-company .single-job-items,
@@ -216,6 +273,78 @@
     .job-post-company .job-tittle ul {
         font-size: 13px;
         gap: 6px 12px;
+    }
+
+    /* Mobile order: Job header -> Job Overview -> Requirements -> Description */
+    .job-post-company > .container > .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .job-post-company > .container > .row > .col-xl-7 {
+        display: contents;
+    }
+
+    .job-post-company > .container > .row > .col-xl-7 > .single-job-items {
+        order: 1;
+        width: 100%;
+        margin-bottom: 20px !important;
+    }
+
+    .job-post-company > .container > .row > .col-xl-4 {
+        order: 2;
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+        margin-top: 0 !important;
+    }
+
+    .job-post-company > .container > .row > .col-xl-7 > .job-post-details {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .job-post-company .job-post-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .job-post-company .job-post-details .post-details2 {
+        order: 1;
+    }
+
+    .job-post-company .job-post-details .post-details1 {
+        order: 2;
+        margin-bottom: 0 !important;
+    }
+
+    .apply-actions {
+        gap: 8px;
+    }
+
+    .apply-actions .apply-btn2 .btn,
+    .job-share-btn {
+        min-height: 52px;
+        padding: 16px 10px;
+        font-size: 13px;
+    }
+
+    .job-share-btn i {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 360px) {
+    .apply-actions .apply-btn2 .btn,
+    .job-share-btn {
+        min-height: 48px;
+        padding: 14px 8px;
+        font-size: 12px;
+    }
+
+    .job-share-status {
+        font-size: 11px;
     }
 }
 </style>
@@ -282,12 +411,94 @@
                         <li>Job Type : <span>{{ucwords(str_replace("_", " ", App\Models\Job::find($id)->type))}}</span></li>
                         <li>Salary : <span>{{App\Models\Job::find($id)->salary}}</span></li>
                     </ul>
-                    <div class="apply-btn2">
-                        <a href="{{ route('apply_job', $id) }}" class="btn">Apply Now</a>
+                    <div class="apply-actions">
+                        <div class="apply-btn2">
+                            <a href="{{ route('apply_job', $id) }}" class="btn">Apply Now</a>
+                        </div>
+                        <button
+                            type="button"
+                            class="job-share-btn"
+                            id="job-share-btn"
+                            data-share-url="{{ url('/job/' . $id) }}"
+                            aria-label="Share this job"
+                        >
+                            <i class="fas fa-share-alt" aria-hidden="true"></i>
+                            <span>Share</span>
+                        </button>
                     </div>
+                    <div class="job-share-status" id="job-share-status" aria-live="polite"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const shareButton = document.getElementById('job-share-btn');
+    const status = document.getElementById('job-share-status');
+
+    if (!shareButton) {
+        return;
+    }
+
+    const url = shareButton.getAttribute('data-share-url') || window.location.href;
+    const title = document.title;
+
+    const setStatus = function (message) {
+        if (status) {
+            status.textContent = message;
+        }
+    };
+
+    const copyUrl = async function () {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(url);
+            return;
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        const copied = document.execCommand('copy');
+        textarea.remove();
+
+        if (!copied) {
+            throw new Error('Copy failed');
+        }
+    };
+
+    shareButton.addEventListener('click', async function () {
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: title,
+                    url: url
+                });
+                setStatus('Link shared');
+            } else {
+                await copyUrl();
+                setStatus('Link copied');
+            }
+        } catch (error) {
+            if (error && error.name === 'AbortError') {
+                return;
+            }
+
+            try {
+                await copyUrl();
+                setStatus('Link copied');
+            } catch (copyError) {
+                setStatus('Unable to copy link');
+            }
+        }
+    });
+});
+</script>
 @endsection
