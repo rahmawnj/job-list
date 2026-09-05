@@ -22,10 +22,19 @@ class ContentController extends Controller
                 ['description' => '']
             );
 
+            // Remove the old hard-coded defaults from earlier versions.
+            if ($milestoneSteps->description === 'send_resume,interview_1,interview_2,mcu,offering,joint') {
+                $milestoneSteps->update(['description' => '']);
+            }
+
+            if ($milestoneStatuses->description === 'pending,active,completed') {
+                $milestoneStatuses->update(['description' => '']);
+            }
+
             return view('dashboard.settings.index', [
                 'title' => 'Setting',
-                'milestoneSteps' => $milestoneSteps,
-                'milestoneStatuses' => $milestoneStatuses,
+                'milestoneSteps' => $milestoneSteps->fresh(),
+                'milestoneStatuses' => $milestoneStatuses->fresh(),
             ]);
         }
 
