@@ -14,12 +14,12 @@ class ContentController extends Controller
         if ($request->query('tab') === 'setting') {
             $milestoneSteps = Content::firstOrCreate(
                 ['name' => 'MILESTONE_STEPS'],
-                ['description' => 'send_resume,interview_1,interview_2,mcu,offering,joint']
+                ['description' => '']
             );
 
             $milestoneStatuses = Content::firstOrCreate(
                 ['name' => 'MILESTONE_STATUSES'],
-                ['description' => 'pending,active,completed']
+                ['description' => '']
             );
 
             return view('dashboard.settings.index', [
@@ -39,12 +39,12 @@ class ContentController extends Controller
     {
         if ($request->input('section') === 'setting') {
             $validatedData = $request->validate([
-                'milestone_steps' => ['required', 'string'],
-                'milestone_statuses' => ['required', 'string'],
+                'milestone_steps' => ['nullable', 'string'],
+                'milestone_statuses' => ['nullable', 'string'],
             ]);
 
             $normalize = function ($value) {
-                return collect(explode(',', $value))
+                return collect(explode(',', $value ?? ''))
                     ->map(fn ($item) => trim($item))
                     ->filter()
                     ->unique()
@@ -52,36 +52,14 @@ class ContentController extends Controller
                     ->implode(',');
             };
 
-            $ensureDefaults = function ($value, array $defaults) use ($normalize) {
-                $items = array_filter(explode(',', $normalize($value)));
-
-                foreach ($defaults as $default) {
-                    if (! in_array($default, $items, true)) {
-                        $items[] = $default;
-                    }
-                }
-
-                return implode(',', $items);
-            };
-
-            $milestoneSteps = $ensureDefaults(
-                $validatedData['milestone_steps'],
-                ['send_resume', 'interview_1', 'interview_2', 'mcu', 'offering', 'joint']
-            );
-
-            $milestoneStatuses = $ensureDefaults(
-                $validatedData['milestone_statuses'],
-                ['pending', 'active', 'completed']
-            );
-
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STEPS'],
-                ['description' => $milestoneSteps]
+                ['description' => $normalize($validatedData['milestone_steps'] ?? '')]
             );
 
             Content::updateOrCreate(
                 ['name' => 'MILESTONE_STATUSES'],
-                ['description' => $milestoneStatuses]
+                ['description' => $normalize($validatedData['milestone_statuses'] ?? '')]
             );
 
             return redirect('/dashboard/content?tab=setting')->with('success', 'Settings have been updated');
