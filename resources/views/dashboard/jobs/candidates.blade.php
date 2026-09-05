@@ -69,7 +69,7 @@
                                                 {{ str_replace('_', ' ', ucfirst($item->step)) }}
                                             @endif
                                         </td>
-                                        <td>{{ str_replace('_', ' ', ucfirst($item->status ?? 'pending')) }}</td>
+                                        <td>{{ str_replace('_', ' ', ucfirst($item->status ?? '-')) }}</td>
                                         <td>
                                             @if($item->milestones->isNotEmpty())
                                                 @foreach($item->milestones as $milestone)
@@ -273,14 +273,14 @@
                                                 <div class="col-md-3">
                                                     <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][step]">
                                                         @foreach(config('milestones.steps') as $step)
-                                                            <option value="{{ $step }}" @selected(($milestone?->step ?? $item->step ?? config('milestones.steps')[0]) === $step)>{{ str_replace('_', ' ', ucfirst($step)) }}</option>
+                                                            <option value="{{ $step }}" @selected(($milestone?->step ?? $item->step ?? '') === $step)>{{ str_replace('_', ' ', ucfirst($step)) }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <select class="form-select" name="milestones[{{ $item->id }}][{{ $index }}][status]">
                                                         @foreach(config('milestones.statuses') as $status)
-                                                            <option value="{{ $status }}" @selected(($milestone?->status ?? $item->status ?? config('milestones.statuses')[0]) === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
+                                                            <option value="{{ $status }}" @selected(($milestone?->status ?? $item->status ?? '') === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -288,7 +288,9 @@
                                                     <input type="date" class="form-control" name="milestones[{{ $item->id }}][{{ $index }}][date]" value="{{ $milestone?->date ?? '' }}">
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <input type="text" class="form-control" name="milestones[{{ $item->id }}][{{ $index }}][notes]" value="{{ $milestone?->notes ?? '' }}" placeholder="Catatan milestone">
+                                                    <label class="form-label mb-1">Deskripsi</label>
+                                                    <textarea class="form-control milestone-notes" name="milestones[{{ $item->id }}][{{ $index }}][notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)">{{ $milestone?->notes ?? '' }}</textarea>
+                                                    <small class="text-muted milestone-notes-counter">0/500</small>
                                                 </div>
                                                 <div class="col-md-1 text-end">
                                                     <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove"><i class="fa fa-trash"></i></button>
@@ -357,6 +359,16 @@
                         if (item) item.remove();
                     };
                 });
+
+                document.querySelectorAll('.milestone-notes').forEach(function (textarea) {
+                    const counter = textarea.parentElement.querySelector('.milestone-notes-counter');
+                    const updateCounter = function () {
+                        if (counter) counter.textContent = textarea.value.length + '/500';
+                    };
+                    textarea.removeEventListener('input', updateCounter);
+                    textarea.addEventListener('input', updateCounter);
+                    updateCounter();
+                });
             }
 
             document.querySelectorAll('.add-milestone-edit-btn').forEach(function (button) {
@@ -388,7 +400,9 @@
                             <input type="date" class="form-control" name="${prefix}[date]">
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" name="${prefix}[notes]" placeholder="Catatan milestone">
+                            <label class="form-label mb-1">Deskripsi</label>
+                            <textarea class="form-control milestone-notes" name="${prefix}[notes]" rows="3" maxlength="500" placeholder="Deskripsi milestone (maks. 500 karakter)"></textarea>
+                            <small class="text-muted milestone-notes-counter">0/500</small>
                         </div>
                         <div class="col-md-1 text-end">
                             <button type="button" class="btn btn-danger btn-sm remove-milestone-btn" title="Remove"><i class="fa fa-trash"></i></button>
