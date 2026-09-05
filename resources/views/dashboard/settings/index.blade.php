@@ -9,7 +9,7 @@
     <h1 class="page-header">{{ $title }}</h1>
 
     <style>
-        .milestone-setting-card { border: 1px solid rgba(0,0,0,.08); border-radius: 10px; background: #fff; padding: 20px; height: 100%; }
+        .milestone-setting-card { border:1px solid rgba(0,0,0,.08); border-radius:10px; background:#fff; padding:20px; height:100%; }
         .milestone-setting-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
         .milestone-sortable-list { list-style:none; padding:0; margin:12px 0 0; min-height:8px; }
         .milestone-sortable-item { display:flex; align-items:center; gap:12px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(0,0,0,.08); border-radius:8px; background:#f8f9fa; cursor:grab; user-select:none; }
@@ -24,7 +24,6 @@
         .milestone-add-row { display:none; gap:8px; margin-top:10px; }
         .milestone-add-row.is-visible { display:flex; }
         .milestone-add-row .form-control { flex:1; }
-        .milestone-drag-note { margin-top:10px; color:#6c757d; font-size:13px; }
     </style>
 
     <div class="row">
@@ -46,6 +45,11 @@
                 @endif
 
                 <div class="panel-body">
+                    @php
+                        $currentSteps = array_values(array_filter(array_map('trim', explode(',', (string) $milestoneSteps->description))));
+                        $currentStatuses = array_values(array_filter(array_map('trim', explode(',', (string) $milestoneStatuses->description))));
+                    @endphp
+
                     <form action="/content/store" method="POST" id="milestone-settings-form">
                         @method('PUT')
                         @csrf
@@ -62,7 +66,6 @@
                                     </div>
 
                                     <ul class="milestone-sortable-list" id="milestone-steps-list">
-                                        @php $currentSteps = array_values(array_filter(array_map('trim', explode(',', (string) $milestoneSteps->description)))); @endphp
                                         @foreach ($currentSteps as $index => $step)
                                             <li class="milestone-sortable-item" draggable="true" data-value="{{ $step }}">
                                                 <span class="milestone-drag-handle"><i class="fa fa-grip-vertical"></i></span>
@@ -72,14 +75,12 @@
                                             </li>
                                         @endforeach
                                     </ul>
-
                                     <div class="milestone-empty" data-empty="steps" style="{{ count($currentSteps) ? 'display:none;' : '' }}">Belum ada milestone.</div>
-
                                     <div class="milestone-add-row" data-add-row="steps">
                                         <input type="text" class="form-control milestone-add-input" data-add-input="steps" placeholder="e.g. reference_check" autocomplete="off">
                                         <button type="button" class="btn btn-primary milestone-confirm-add" data-add-confirm="steps">Add</button>
                                     </div>
-                                    <div class="milestone-drag-note">Drag and drop untuk mengubah urutan.</div>
+                                    <div class="text-muted small mt-2">Drag and drop untuk mengubah urutan.</div>
                                 </div>
                             </div>
 
@@ -91,7 +92,6 @@
                                     </div>
 
                                     <ul class="milestone-sortable-list" id="milestone-statuses-list">
-                                        @php $currentStatuses = array_values(array_filter(array_map('trim', explode(',', (string) $milestoneStatuses->description)))); @endphp
                                         @foreach ($currentStatuses as $index => $status)
                                             <li class="milestone-sortable-item" draggable="true" data-value="{{ $status }}">
                                                 <span class="milestone-drag-handle"><i class="fa fa-grip-vertical"></i></span>
@@ -101,14 +101,12 @@
                                             </li>
                                         @endforeach
                                     </ul>
-
                                     <div class="milestone-empty" data-empty="statuses" style="{{ count($currentStatuses) ? 'display:none;' : '' }}">Belum ada status.</div>
-
                                     <div class="milestone-add-row" data-add-row="statuses">
                                         <input type="text" class="form-control milestone-add-input" data-add-input="statuses" placeholder="e.g. cancelled" autocomplete="off">
                                         <button type="button" class="btn btn-primary milestone-confirm-add" data-add-confirm="statuses">Add</button>
                                     </div>
-                                    <div class="milestone-drag-note">Drag and drop untuk mengubah urutan.</div>
+                                    <div class="text-muted small mt-2">Drag and drop untuk mengubah urutan.</div>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +150,6 @@
                     event.preventDefault();
                     const active = list.querySelector('.milestone-sortable-item.dragging');
                     if (!active || active === item) return;
-
                     const rect = item.getBoundingClientRect();
                     const before = event.clientY < rect.top + rect.height / 2;
                     list.insertBefore(active, before ? item : item.nextSibling);
@@ -178,10 +175,10 @@
                     return;
                 }
 
-                const existing = Array.from(list.querySelectorAll('.milestone-sortable-item')).map(function (item) {
-                    return (item.dataset.value || '').toLowerCase();
+                const exists = Array.from(list.querySelectorAll('.milestone-sortable-item')).some(function (item) {
+                    return (item.dataset.value || '').toLowerCase() === value.toLowerCase();
                 });
-                if (existing.includes(value.toLowerCase())) {
+                if (exists) {
                     input.value = '';
                     input.focus();
                     return;
@@ -199,7 +196,6 @@
                 list.appendChild(item);
                 bindItemEvents(list, item);
                 refreshList(list);
-
                 input.value = '';
                 input.focus();
             }
@@ -239,8 +235,13 @@
             const form = document.getElementById('milestone-settings-form');
             if (form) {
                 form.addEventListener('submit', function () {
-                    document.getElementById('milestone_steps').value = Array.from(getList('steps').querySelectorAll('.milestone-sortable-item')).map(function (item) { return item.dataset.value || ''; }).filter(Boolean).join(',');
-                    document.getElementById('milestone_statuses').value = Array.from(getList('statuses').querySelectorAll('.milestone-sortable-item')).map(function (item) { return item.dataset.value || ''; }).filter(Boolean).join(',');
+                    document.getElementById('milestone_steps').value = Array.from(getList('steps').querySelectorAll('.milestone-sortable-item')).map(function (item) {
+                        return item.dataset.value || '';
+                    }).filter(Boolean).join(',');
+
+                    document.getElementById('milestone_statuses').value = Array.from(getList('statuses').querySelectorAll('.milestone-sortable-item')).map(function (item) {
+                        return item.dataset.value || '';
+                    }).filter(Boolean).join(',');
                 });
             }
         });
