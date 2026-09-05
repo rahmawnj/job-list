@@ -67,6 +67,72 @@
             });
         </script>
 
+        <!-- The jobs page uses a normal GET filter form and regular pagination, not AJAX. -->
+        <script>
+            $(function () {
+                if (window.location.pathname.replace(/\/+$/, '') !== '/jobs') {
+                    return;
+                }
+
+                var $form = $('.jobs-filter-form');
+                if (!$form.length) {
+                    return;
+                }
+
+                // Disable the legacy AJAX handlers defined in homepage/jobs.blade.php.
+                $(document).off('click', '.pagination a');
+                $('#search').off('keyup');
+                $('#sort_by').off('change');
+                $('[name="job_type"]').off('change');
+                $('#job_category').off('change');
+                $('#location').off('change');
+
+                // Make the existing filter controls submit to the normal /jobs GET route.
+                $form.attr('action', '/jobs').attr('method', 'GET');
+                $('#location').attr('name', 'location');
+                $('#job_category').attr('name', 'job_category');
+
+                // Keep the current filter values when the page is reloaded from a filter/pagination URL.
+                var params = new URLSearchParams(window.location.search);
+                var locationValue = params.get('location') || '';
+                var categoryValue = params.get('job_category') || '';
+                var jobTypeValue = params.get('job_type') || '';
+
+                $('#location').val(locationValue);
+                $('#job_category').val(categoryValue);
+                $('[name="job_type"]').prop('checked', false);
+                if (jobTypeValue) {
+                    $('[name="job_type"][value="' + jobTypeValue + '"]').prop('checked', true);
+                }
+
+                if (!$form.find('.jobs-filter-submit').length) {
+                    $form.append(
+                        '<button type="submit" class="jobs-filter-submit btn btn-primary w-100 mt-4">Filter</button>'
+                    );
+                }
+
+                // Sort is also a normal page navigation, never an AJAX request.
+                $('#sort_by').on('change', function () {
+                    var url = new URL('/jobs', window.location.origin);
+
+                    params.forEach(function (value, key) {
+                        url.searchParams.set(key, value);
+                    });
+
+                    if ($(this).val()) {
+                        url.searchParams.set('sort_by', $(this).val());
+                    } else {
+                        url.searchParams.delete('sort_by');
+                    }
+
+                    window.location.href = url.toString();
+                });
+
+                var currentSort = params.get('sort_by') || '';
+                $('#sort_by').val(currentSort);
+            });
+        </script>
+
         <script src="{{asset('assets/homepage/js/popper.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/bootstrap.min.js')}}"></script>
 	    <!-- Jquery Mobile Menu -->
