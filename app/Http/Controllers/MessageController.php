@@ -15,7 +15,7 @@ class MessageController extends Controller
     {
         return view('dashboard.messages.index', [
             'title' => 'Message',
-            'messages' => Message::all()
+            'messages' => Message::latest()->get()
         ]);
     }
     public function emails()
