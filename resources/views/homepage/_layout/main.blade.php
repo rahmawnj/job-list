@@ -54,9 +54,19 @@
 		<!-- All JS Custom Plugins Link Here here -->
         <script src="{{asset('assets/homepage/js/vendor/modernizr-3.5.0.min.js')}}"></script>
 		<!-- Jquery, Popper, Bootstrap -->
-		<script src="{{asset('assets/homepage/js/vendor/jquery-1.12.4.min.js')}}"></script>
+        <script src="{{asset('assets/homepage/js/vendor/jquery-1.12.4.min.js')}}"></script>
         <script src="{{asset('assets/dashboard/plugins/select-picker/dist/picker.min.js')}}"></script>
         @stack('scripts')
+
+        <!-- Bridge select-picker's custom event to the normal jQuery change event used by page filters -->
+        <script>
+            $(function () {
+                $(document).on('sp-change', '.job-filter-card .job-filter-select', function () {
+                    $(this).trigger('change');
+                });
+            });
+        </script>
+
         <script src="{{asset('assets/homepage/js/popper.min.js')}}"></script>
         <script src="{{asset('assets/homepage/js/bootstrap.min.js')}}"></script>
 	    <!-- Jquery Mobile Menu -->
