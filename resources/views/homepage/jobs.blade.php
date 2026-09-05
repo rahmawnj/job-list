@@ -12,7 +12,6 @@
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
                         <h2>{!! \App\Models\Content::where('name', 'title_jobs_hero')->first()->description !!}</h2>
-                        
                     </div>
                 </div>
             </div>
@@ -36,11 +35,11 @@
                         <h4>Filter Jobs</h4>
                     </div>
 
-                    <form action="" class="jobs-filter-form">
+                    <form action="{{ url('/jobs') }}" method="GET" class="jobs-filter-form">
                         <!-- Search Filter Group -->
                         <div class="single-listing mb-25">
                             <div class="select-Categories jobs-search-filter">
-                                <input class="form-control" name="search" id="search" type="search" placeholder="Search...">
+                                <input class="form-control" name="search" id="search" type="search" placeholder="Search..." value="{{ request('search', '') }}">
                             </div>
                         </div>
 
@@ -50,10 +49,10 @@
                                 <h4>Job Location</h4>
                             </div>
                             <div class="select-job-items">
-                                <select id="location" name="select" data-picker>
-                                    <option value="">All Locations</option>
+                                <select id="location" name="location" data-picker>
+                                    <option value="" {{ request('location', '') === '' ? 'selected' : '' }}>All Locations</option>
                                     @foreach (App\Models\Location::all() as $location)
-                                        <option value="{{$location->id}}">{{$location->name}}</option>
+                                        <option value="{{$location->id}}" {{ (string) request('location', '') === (string) $location->id ? 'selected' : '' }}>{{$location->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -65,39 +64,41 @@
                                 <h4>Job Category</h4>
                             </div>
                             <div class="select-job-items">
-                                <select id="job_category" name="select" data-picker>
-                                    <option value="">All Category</option>
+                                <select id="job_category" name="job_category" data-picker>
+                                    <option value="" {{ request('job_category', '') === '' ? 'selected' : '' }}>All Category</option>
                                     @foreach (App\Models\Jobcategory::all() as $jobcategory)
-                                        <option value="{{$jobcategory->id}}">{{$jobcategory->name}}</option>
+                                        <option value="{{$jobcategory->id}}" {{ (string) request('job_category', '') === (string) $jobcategory->id ? 'selected' : '' }}>{{$jobcategory->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
 
                         <!-- Job Type Group -->
-                        <div class="single-listing">
+                        <div class="single-listing mb-25">
                             <div class="small-section-tittle2 mb-20">
                                 <h4>Job Type</h4>
                             </div>
                             <div class="select-Categories jobs-type-filter">
                                 <label class="container">Full Time
-                                    <input name="job_type" type="radio" value="full_time">
+                                    <input name="job_type" type="radio" value="full_time" {{ request('job_type') === 'full_time' ? 'checked' : '' }}>
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Part Time
-                                    <input name="job_type" type="radio" value="part_time">
+                                    <input name="job_type" type="radio" value="part_time" {{ request('job_type') === 'part_time' ? 'checked' : '' }}>
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Remote
-                                    <input name="job_type" type="radio" value="remote">
+                                    <input name="job_type" type="radio" value="remote" {{ request('job_type') === 'remote' ? 'checked' : '' }}>
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Freelance
-                                    <input name="job_type" type="radio" value="freelance">
+                                    <input name="job_type" type="radio" value="freelance" {{ request('job_type') === 'freelance' ? 'checked' : '' }}>
                                     <span class="checkmark"></span>
                                 </label>
                             </div>
                         </div>
+
+                        <button type="submit" class="jobs-filter-submit btn btn-primary w-100 mt-2">Filter</button>
                     </form>
                 </div>
             </div>
@@ -118,10 +119,10 @@
 
                                         <div class="select-job-items">
                                             <span>Sort by</span>
-                                            <select id="sort_by" name="select">
+                                            <select id="sort_by" name="sort_by">
                                                 <option value="">None</option>
-                                                <option value="latest">Latest</option>
-                                                <option value="oldest">Oldest</option>
+                                                <option value="latest" {{ request('sort_by') === 'latest' ? 'selected' : '' }}>Latest</option>
+                                                <option value="oldest" {{ request('sort_by') === 'oldest' ? 'selected' : '' }}>Oldest</option>
                                             </select>
                                         </div>
                                     </div>
@@ -167,8 +168,8 @@
     .job-listing-area .job-category-listing .jobs-filter-form > .single-listing {
         margin-bottom: 24px !important;
     }
-    .job-listing-area .job-category-listing .jobs-filter-form > .single-listing:last-child {
-        margin-bottom: 0 !important;
+    .job-listing-area .job-category-listing .jobs-filter-form > .single-listing:last-of-type {
+        margin-bottom: 12px !important;
     }
     .job-listing-area .job-category-listing .single-listing > .small-section-tittle2 h4 {
         margin-bottom: 12px !important;
@@ -203,6 +204,14 @@
         font-size: 15px;
         box-shadow: none;
         transition: all 0.2s ease;
+    }
+
+    .jobs-filter-submit {
+        height: 46px;
+        border: 0;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
     }
 
     .job-category-listing .picker {
@@ -339,8 +348,6 @@
     .jobs-type-filter .checkmark {
         position: absolute;
         left: 0;
-        /* top: 50%;
-        transform: translateY(-50%); */
         height: 20px;
         width: 20px;
         border-radius: 6px;
@@ -368,7 +375,7 @@
         display: block;
     }
 
-        .count-job {
+    .count-job {
         margin-bottom: 20px;
         padding: 0 2px;
     }
@@ -432,70 +439,24 @@
             }
         });
 
-        $(document).on('click', '.pagination a', function(event) {
-          event.preventDefault();
-          var page = $(this).attr('href').split('page=')[1];
-          getMoreJobs(page);
+        $('#sort_by').on('change', function () {
+            var url = new URL(window.location.href);
+            var current = new URLSearchParams(window.location.search);
+
+            current.forEach(function (value, key) {
+                url.searchParams.set(key, value);
+            });
+
+            if ($(this).val()) {
+                url.searchParams.set('sort_by', $(this).val());
+            } else {
+                url.searchParams.delete('sort_by');
+            }
+
+            // Always restart from page 1 when changing the sort order.
+            url.searchParams.set('page', '1');
+            window.location.href = url.toString();
         });
-
-
-        $('#search').on('keyup', function() {
-          $value = $(this).val();
-          getMoreJobs(1);
-        });
-
-        $('#sort_by').on('change', function (e) {
-					getMoreJobs();
-        });
-        
-        $('[name="job_type"]').on('change', function (e) {
-					getMoreJobs();
-                });
-        $('#job_category').on('change', function (e) {
-					getMoreJobs();
-                });
-        $('#location').on('change', function (e) {
-					getMoreJobs();
-                });
-        });
-
-
-    function getMoreJobs(page) {
-      var search = $('#search').val();
-      var selectedCountry = $("#country option:selected").val();
-      var selectedSortBy = $("#sort_by option:selected").val();
-      var selectedJobType = $("[name='job_type']:checked").val();
-      var selectedJobCategory = $("#job_category option:selected").val();
-      var selectedLocation = $("#location option:selected").val();
-      $.ajax({
-        type: "GET",
-        data: {
-          'location': selectedLocation,
-          'job_category': selectedJobCategory,
-          'job_type' : selectedJobType,
-          'sort_by' : selectedSortBy,
-          'search' : search,
-        },
-        url: "{{ route('jobs.get-more-jobs') }}" + "?page=" + page,
-        success:function(data) {
-          $('#job_data').html(data);
-
-          var totalJobs = Number($('#job_data .job-data-meta').data('total') || 0);
-          var isEmpty = $('#job_data .job-data-meta').data('empty') === true || $('#job_data .job-data-meta').data('empty') === 'true';
-
-          if (isEmpty) {
-            totalJobs = 0;
-          }
-
-          $('.job-results-count span').text((Number(totalJobs) || 0) + ' Jobs found');
-        },
-        error:function(e){
-console.log(e)
-        }
-      });
-    }
-  </script>
-
+    });
+</script>
 @endpush
-
-
