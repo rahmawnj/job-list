@@ -33,7 +33,8 @@
                 </div>
                 <div class="menu-divider m-0"></div>
             </div>
-            <div class="menu-header">Data Master</div>
+
+            <div class="menu-header">Navigation</div>
             <div class="menu-item {{($title == 'Dashboard') ? 'active' : ''}}">
                 <a href="/dashboard" class="menu-link">
                     <div class="menu-icon">
@@ -42,6 +43,8 @@
                     <div class="menu-text">Dashboard</div>
                 </a>
             </div>
+
+            <div class="menu-header">Data Master</div>
             <div class="menu-item {{($title == 'Users') ? 'active' : ''}}">
                 <a href="/dashboard/users" class="menu-link">
                     <div class="menu-icon">
