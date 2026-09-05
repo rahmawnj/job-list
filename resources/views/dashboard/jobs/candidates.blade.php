@@ -3,33 +3,11 @@
 @push('page-css')
 <link href="{{ asset('assets/dashboard/plugins/select-picker/dist/picker.min.css') }}" rel="stylesheet">
 <style>
-    .milestone-row-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .milestone-row-title {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .notes-help {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 6px;
-        color: #6c757d;
-        font-size: 12px;
-    }
-
-    .notes-count {
-        white-space: nowrap;
-    }
+    .milestone-row-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .milestone-row-title { margin:0; font-size:14px; font-weight:600; }
+    .notes-help { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:6px; color:#6c757d; font-size:12px; }
+    .notes-count { white-space:nowrap; }
+    .milestone-form-alert { margin-bottom:16px; }
 </style>
 @endpush
 
@@ -76,14 +54,7 @@
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered align-middle">
                             <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>CV Link</th>
-                                    <th>Recruitment Process</th>
-                                    <th>Action</th>
-                                </tr>
+                                <tr><th>No</th><th>Name</th><th>Email</th><th>CV Link</th><th>Recruitment Process</th><th>Action</th></tr>
                             </thead>
                             <tbody>
                                 @forelse ($jobCandidates as $item)
@@ -94,18 +65,13 @@
                                         <td>
                                             @if($item->candidate && $item->candidate->cv_url)
                                                 <a href="{{ $item->candidate->cv_url }}" target="_blank">Open CV</a>
-                                            @else
-                                                -
-                                            @endif
+                                            @else - @endif
                                         </td>
                                         <td>
                                             @if($item->milestones->isNotEmpty())
                                                 <div class="d-flex flex-column gap-1">
                                                     @foreach($item->milestones as $milestone)
-                                                        <div>
-                                                            {{ str_replace('_', ' ', ucfirst($milestone->step)) }}
-                                                            <span class="text-muted">({{ str_replace('_', ' ', ucfirst($milestone->status ?? '-')) }})</span>
-                                                        </div>
+                                                        <div>{{ str_replace('_', ' ', ucfirst($milestone->step)) }} <span class="text-muted">({{ str_replace('_', ' ', ucfirst($milestone->status ?? '-')) }})</span></div>
                                                     @endforeach
                                                 </div>
                                             @else
@@ -118,11 +84,8 @@
                                                     <i class="fa fa-list-check"></i> Recruitment Process
                                                 </button>
                                                 <form action="{{ route('admin.job.candidates.destroy', [$job->id, $item->id]) }}" method="POST" onsubmit="return confirm('Unassign this candidate from this job?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">
-                                                        <i class="fa fa-user-minus"></i> Unassign
-                                                    </button>
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-user-minus"></i> Unassign</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -131,29 +94,24 @@
                                     <div class="modal fade" id="milestoneModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
                                         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                                             <div class="modal-content">
-                                                <form action="{{ route('admin.job.candidates.milestones.update', [$job->id, $item->id]) }}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
+                                                <form action="{{ route('admin.job.candidates.milestones.update', [$job->id, $item->id]) }}" method="POST" class="milestone-form">
+                                                    @csrf @method('PUT')
                                                     <div class="modal-header">
                                                         <h5 class="modal-title">Recruitment Process - {{ $item->candidate->name ?? 'Candidate' }}</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <p class="text-muted mb-3">Atur tahapan recruitment untuk candidate ini.</p>
+                                                        <div class="alert alert-danger d-none milestone-form-alert" role="alert"></div>
+                                                        <p class="text-muted mb-3">Atur tahapan recruitment untuk candidate ini. Isi Step dan Status pada setiap tahap, lalu klik Save Recruitment Process.</p>
                                                         <div id="milestoneRows{{ $item->id }}">
-                                                            @php
-                                                                $candidateMilestones = $item->milestones->values();
-                                                            @endphp
+                                                            @php $candidateMilestones = $item->milestones->values(); @endphp
 
                                                             @forelse($candidateMilestones as $index => $milestone)
                                                                 <div class="milestone-row border rounded p-3 mb-3">
                                                                     <div class="milestone-row-header">
                                                                         <h6 class="milestone-row-title">Recruitment Step {{ $index + 1 }}</h6>
-                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
-                                                                            <i class="fa fa-trash"></i>
-                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove"><i class="fa fa-trash"></i></button>
                                                                     </div>
-
                                                                     <div class="row g-3">
                                                                         <div class="col-md-4">
                                                                             <label class="form-label">Step</label>
@@ -179,15 +137,13 @@
                                                                         </div>
                                                                         <div class="col-12">
                                                                             <label class="form-label">Link <span class="text-muted">(optional)</span></label>
-                                                                            <input type="url" name="milestones[{{ $index }}][link]" class="form-control" maxlength="2048" value="{{ $milestone->link }}" placeholder="https://..."><small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
+                                                                            <input type="url" name="milestones[{{ $index }}][link]" class="form-control" maxlength="2048" value="{{ $milestone->link }}" placeholder="https://...">
+                                                                            <small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
                                                                         </div>
                                                                         <div class="col-12">
                                                                             <label class="form-label">Notes</label>
                                                                             <textarea name="milestones[{{ $index }}][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step...">{{ $milestone->notes }}</textarea>
-                                                                            <div class="notes-help">
-                                                                                <span>Describe important updates, feedback, or follow-up details for this step.</span>
-                                                                                <span class="notes-count"><span class="current-count">{{ strlen($milestone->notes ?? '') }}</span>/500</span>
-                                                                            </div>
+                                                                            <div class="notes-help"><span>Describe important updates, feedback, or follow-up details for this step.</span><span class="notes-count"><span class="current-count">{{ strlen($milestone->notes ?? '') }}</span>/500</span></div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -195,11 +151,8 @@
                                                                 <div class="milestone-row border rounded p-3 mb-3">
                                                                     <div class="milestone-row-header">
                                                                         <h6 class="milestone-row-title">Recruitment Step 1</h6>
-                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
-                                                                            <i class="fa fa-trash"></i>
-                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove"><i class="fa fa-trash"></i></button>
                                                                     </div>
-
                                                                     <div class="row g-3">
                                                                         <div class="col-md-4">
                                                                             <label class="form-label">Step</label>
@@ -225,15 +178,13 @@
                                                                         </div>
                                                                         <div class="col-12">
                                                                             <label class="form-label">Link <span class="text-muted">(optional)</span></label>
-                                                                            <input type="url" name="milestones[0][link]" class="form-control" maxlength="2048" placeholder="https://..."><small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
+                                                                            <input type="url" name="milestones[0][link]" class="form-control" maxlength="2048" placeholder="https://...">
+                                                                            <small class="text-muted">Tambahkan link terkait step ini, misalnya meeting, assessment, dokumen, atau hasil interview.</small>
                                                                         </div>
                                                                         <div class="col-12">
                                                                             <label class="form-label">Notes</label>
                                                                             <textarea name="milestones[0][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step..."></textarea>
-                                                                            <div class="notes-help">
-                                                                                <span>Describe important updates, feedback, or follow-up details for this step.</span>
-                                                                                <span class="notes-count"><span class="current-count">0</span>/500</span>
-                                                                            </div>
+                                                                            <div class="notes-help"><span>Describe important updates, feedback, or follow-up details for this step.</span><span class="notes-count"><span class="current-count">0</span>/500</span></div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -241,29 +192,21 @@
                                                         </div>
 
                                                         @if(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))
-                                                            <div class="alert alert-warning mb-0">
-                                                                Recruitment process step/status belum dikonfigurasi di Settings.
-                                                            </div>
+                                                            <div class="alert alert-warning mb-0">Recruitment process step/status belum dikonfigurasi di Settings.</div>
                                                         @else
-                                                            <button type="button" class="btn btn-outline-primary btn-sm add-milestone" data-target="milestoneRows{{ $item->id }}">
-                                                                <i class="fa fa-plus"></i> Add Recruitment Step
-                                                            </button>
+                                                            <button type="button" class="btn btn-outline-primary btn-sm add-milestone" data-target="milestoneRows{{ $item->id }}"><i class="fa fa-plus"></i> Add Recruitment Step</button>
                                                         @endif
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-primary" @disabled(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))>
-                                                            <i class="fa fa-save"></i> Save Recruitment Process
-                                                        </button>
+                                                        <button type="submit" class="btn btn-primary" @disabled(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))><i class="fa fa-save"></i> Save Recruitment Process</button>
                                                     </div>
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
                                 @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center">No candidate assigned to this job yet.</td>
-                                    </tr>
+                                    <tr><td colspan="6" class="text-center">No candidate assigned to this job yet.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -278,38 +221,13 @@
             <div class="modal-content">
                 <form action="{{ route('admin.job.candidates.store', $job->id) }}" method="POST">
                     @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title">Assign Candidate - {{ $job->title }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                    <div class="modal-header"><h5 class="modal-title">Assign Candidate - {{ $job->title }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Job</label>
-                            <input type="text" class="form-control" value="{{ $job->title }}" readonly>
-                        </div>
-                        <div>
-                            <label class="form-label">Candidate</label>
-                            <select class="form-control candidate-picker" name="candidate_id" required>
-                                <option value="">Select candidate</option>
-                                @foreach ($candidateOptions as $candidate)
-                                    <option value="{{ $candidate->id }}" @selected(old('candidate_id') == $candidate->id)>
-                                        {{ $candidate->name }} - {{ $candidate->email ?? 'No email' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if ($candidateOptions->isEmpty())
-                            <div class="alert alert-info mt-3 mb-0">
-                                Semua candidate sudah di-assign ke job ini.
-                            </div>
-                        @endif
+                        <div class="mb-3"><label class="form-label">Job</label><input type="text" class="form-control" value="{{ $job->title }}" readonly></div>
+                        <div><label class="form-label">Candidate</label><select class="form-control candidate-picker" name="candidate_id" required><option value="">Select candidate</option>@foreach ($candidateOptions as $candidate)<option value="{{ $candidate->id }}" @selected(old('candidate_id') == $candidate->id)>{{ $candidate->name }} - {{ $candidate->email ?? 'No email' }}</option>@endforeach</select></div>
+                        @if ($candidateOptions->isEmpty())<div class="alert alert-info mt-3 mb-0">Semua candidate sudah di-assign ke job ini.</div>@endif
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" @disabled($candidateOptions->isEmpty())>
-                            <i class="fa fa-user-plus"></i> Assign Candidate
-                        </button>
-                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" @disabled($candidateOptions->isEmpty())><i class="fa fa-user-plus"></i> Assign Candidate</button></div>
                 </form>
             </div>
         </div>
@@ -318,39 +236,42 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.jQuery && typeof window.jQuery.fn.picker === 'function') {
-                $('.candidate-picker').picker({
-                    search: true,
-                    searchAutofocus: true,
-                    texts: {
-                        trigger: 'Select candidate',
-                        search: 'Search candidate',
-                        noResult: 'Candidate not found'
-                    }
-                });
+                $('.candidate-picker').picker({ search:true, searchAutofocus:true, texts:{ trigger:'Select candidate', search:'Search candidate', noResult:'Candidate not found' } });
             }
 
             function updateNotesCount(textarea) {
                 if (!textarea) return;
-
                 const counter = textarea.closest('.col-12')?.querySelector('.current-count');
-                if (counter) {
-                    counter.textContent = textarea.value.length;
-                }
+                if (counter) counter.textContent = textarea.value.length;
             }
 
             function updateStepTitles(container) {
                 container.querySelectorAll('.milestone-row').forEach(function (row, index) {
                     const title = row.querySelector('.milestone-row-title');
-                    if (title) {
-                        title.textContent = 'Recruitment Step ' + (index + 1);
-                    }
+                    if (title) title.textContent = 'Recruitment Step ' + (index + 1);
                 });
             }
 
-            document.querySelectorAll('.milestone-notes').forEach(function (textarea) {
-                textarea.addEventListener('input', function () {
-                    updateNotesCount(textarea);
+            function reindexMilestones(container) {
+                container.querySelectorAll('.milestone-row').forEach(function (row, index) {
+                    row.querySelectorAll('input, select, textarea').forEach(function (field) {
+                        field.name = field.name.replace(/milestones\[[0-9]+\]/, 'milestones[' + index + ']');
+                    });
                 });
+                updateStepTitles(container);
+            }
+
+            function showMilestoneFormError(form, message, field) {
+                const alert = form.querySelector('.milestone-form-alert');
+                if (alert) { alert.textContent = message; alert.classList.remove('d-none'); }
+                if (field) {
+                    field.focus();
+                    field.scrollIntoView({ behavior:'smooth', block:'center' });
+                }
+            }
+
+            document.querySelectorAll('.milestone-notes').forEach(function (textarea) {
+                textarea.addEventListener('input', function () { updateNotesCount(textarea); });
                 updateNotesCount(textarea);
             });
 
@@ -358,37 +279,34 @@
                 button.addEventListener('click', function () {
                     const target = document.getElementById(button.dataset.target);
                     if (!target) return;
-
                     const rows = target.querySelectorAll('.milestone-row');
-                    const nextIndex = rows.length;
                     const template = rows[0]?.cloneNode(true);
                     if (!template) return;
 
+                    const nextIndex = rows.length;
                     template.querySelectorAll('input, select, textarea').forEach(function (field) {
                         field.name = field.name.replace(/milestones\[[0-9]+\]/, 'milestones[' + nextIndex + ']');
-                        if (field.tagName === 'SELECT') {
-                            field.selectedIndex = 0;
-                        } else {
-                            field.value = '';
-                        }
+                        if (field.tagName === 'SELECT') field.selectedIndex = 0;
+                        else field.value = '';
                     });
 
                     const counter = template.querySelector('.current-count');
                     if (counter) counter.textContent = '0';
-
                     target.appendChild(template);
                     updateStepTitles(target);
 
-                    template.querySelector('.milestone-notes')?.addEventListener('input', function () {
-                        updateNotesCount(this);
-                    });
+                    const notes = template.querySelector('.milestone-notes');
+                    notes?.addEventListener('input', function () { updateNotesCount(this); });
+                    notes && updateNotesCount(notes);
+
+                    template.scrollIntoView({ behavior:'smooth', block:'nearest' });
+                    template.querySelector('select')?.focus();
                 });
             });
 
             document.addEventListener('click', function (event) {
                 const button = event.target.closest('.remove-milestone');
                 if (!button) return;
-
                 const row = button.closest('.milestone-row');
                 const container = row?.parentElement;
                 if (!row || !container) return;
@@ -396,19 +314,59 @@
                 const rows = container.querySelectorAll('.milestone-row');
                 if (rows.length > 1) {
                     row.remove();
-                    updateStepTitles(container);
+                    reindexMilestones(container);
                 } else {
-                    row.querySelectorAll('input, textarea').forEach(input => input.value = '');
-                    row.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                    row.querySelectorAll('input, textarea').forEach(function (field) { field.value = ''; });
+                    row.querySelectorAll('select').forEach(function (select) { select.selectedIndex = 0; });
                     updateNotesCount(row.querySelector('.milestone-notes'));
                 }
             });
 
+            document.querySelectorAll('.milestone-form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    const container = form.querySelector('[id^="milestoneRows"]');
+                    if (!container) return;
+                    reindexMilestones(container);
+
+                    const rows = container.querySelectorAll('.milestone-row');
+                    let invalidField = null;
+                    let message = '';
+
+                    rows.forEach(function (row, index) {
+                        if (invalidField) return;
+                        const step = row.querySelector('select[name$="[step]"]');
+                        const status = row.querySelector('select[name$="[status]"]');
+                        if (!step?.value) {
+                            invalidField = step;
+                            message = 'Recruitment Step ' + (index + 1) + ': pilih Step terlebih dahulu.';
+                        } else if (!status?.value) {
+                            invalidField = status;
+                            message = 'Recruitment Step ' + (index + 1) + ': pilih Status terlebih dahulu.';
+                        }
+                    });
+
+                    if (invalidField) {
+                        event.preventDefault();
+                        showMilestoneFormError(form, message, invalidField);
+                        return;
+                    }
+
+                    form.querySelector('.milestone-form-alert')?.classList.add('d-none');
+                });
+
+                form.addEventListener('invalid', function (event) {
+                    const field = event.target;
+                    const alert = form.querySelector('.milestone-form-alert');
+                    if (alert && field?.validationMessage) {
+                        alert.textContent = field.validationMessage;
+                        alert.classList.remove('d-none');
+                    }
+                }, true);
+            });
+
             @if(session('open_milestone_modal'))
                 const milestoneModal = document.getElementById('milestoneModal{{ session('open_milestone_modal') }}');
-                if (milestoneModal && window.bootstrap && typeof window.bootstrap.Modal === 'function') {
-                    new window.bootstrap.Modal(milestoneModal).show();
-                }
+                if (milestoneModal && window.bootstrap && typeof window.bootstrap.Modal === 'function') new window.bootstrap.Modal(milestoneModal).show();
             @endif
         });
     </script>
