@@ -58,7 +58,7 @@ Route::get('/', function(){
     $topCategories = Jobcategory::where('is_top_category', true)->whereNotNull('logo')->get(['id', 'name']);
     $html = view('homepage.index', ['jobs' => $jobs->paginate(5), 'count_job' => $jobs->count()])->render();
 
-    // Top Categories: server-side links, no JavaScript.
+    // Top Categories use normal server-side links, no JavaScript.
     $categoryIndex = 0;
     $html = preg_replace_callback('/<a href="\/jobs" class="text-decoration-none">/', function ($match) use (&$categoryIndex, $topCategories) {
         $category = $topCategories->values()->get($categoryIndex++);
@@ -66,12 +66,34 @@ Route::get('/', function(){
         return '<a href="/jobs?job_category=' . urlencode($category->id) . '" class="text-decoration-none">';
     }, $html);
 
-    // Home search/filter forms use normal GET requests handled by PHP.
+    // Home search uses a normal GET request handled by PHP.
     $html = str_replace('<form action="/jobs" method="post">', '<form action="/jobs" method="GET">', $html);
-    $html = str_replace('<div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">', '<form action="/jobs" method="GET"><div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">', $html);
-    $html = str_replace('<select class="job-filter-select" data-picker id="job_category" name="select">', '<select class="job-filter-select" data-picker id="job_category" name="job_category">', $html);
-    $html = str_replace('<select class="job-filter-select" data-picker id="location" name="select">', '<select class="job-filter-select" data-picker id="location" name="location">', $html);
-    $html = str_replace('</div>\n\n                <div id="job_data" style="position: relative; z-index: 1;">', '</div><div class="text-center mt-3"><button type="submit" class="btn px-4 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div></div></form>\n\n                <div id="job_data" style="position: relative; z-index: 1;">', $html);
+
+    // Home hiring filters are submitted together with one PHP GET button.
+    $html = str_replace(
+        '<div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">',
+        '<form action="/jobs" method="GET"><div class="card border-0 shadow-sm p-4 mb-5 job-filter-card">',
+        $html
+    );
+    $html = str_replace(
+        '<select class="job-filter-select" data-picker id="job_category" name="select">',
+        '<select class="job-filter-select" data-picker id="job_category" name="job_category">',
+        $html
+    );
+    $html = str_replace(
+        '<select class="job-filter-select" data-picker id="location" name="select">',
+        '<select class="job-filter-select" data-picker id="location" name="location">',
+        $html
+    );
+
+    // Insert before the job data section; this is not dependent on literal newline characters.
+    $homeButton = '<div class="text-center mt-3"><button type="submit" class="btn px-4 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div></div></form>';
+    $html = preg_replace(
+        '/<\/div>\s*(<div id="job_data" style="position: relative; z-index: 1;">)/',
+        $homeButton . '$1',
+        $html,
+        1
+    );
 
     return $html;
 });
@@ -116,22 +138,35 @@ Route::get('/jobs', function(Request $request){
     $countJob = (clone $jobs)->count();
     $html = view('homepage.jobs', ['jobs' => $jobs->paginate(5)->withQueryString(), 'count_job' => $countJob])->render();
 
-    // Convert the existing jobs filter form to a normal PHP GET form.
-    $html = str_replace('<form action="" class="jobs-filter-form">', '<form action="/jobs" method="GET" class="jobs-filter-form">', $html);
+    // Normal PHP GET form: filters are submitted only when the button is clicked.
+    $html = str_replace(
+        '<form action="" class="jobs-filter-form">',
+        '<form action="/jobs" method="GET" class="jobs-filter-form">',
+        $html
+    );
     $html = str_replace('<select id="location" name="select" data-picker>', '<select id="location" name="location" data-picker>', $html);
     $html = str_replace('<select id="job_category" name="select" data-picker>', '<select id="job_category" name="job_category" data-picker>', $html);
     $html = str_replace('<select id="sort_by" name="select">', '<select id="sort_by" name="sort_by">', $html);
-    $html = str_replace('</div>\n                    </form>', '</div>\n                        <button type="submit" class="btn w-100 mt-4" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button>\n                    </form>', $html);
 
-    // Keep current values visible after a PHP GET submission.
+    // Add a real submit button to the sidebar form. Use a regex so indentation/newlines do not matter.
+    $html = preg_replace(
+        '/(<form action="\/jobs" method="GET" class="jobs-filter-form">.*?)(<\/form>)/s',
+        '$1<div class="mt-4"><button type="submit" class="btn w-100 py-2" style="background:#2a93d5;color:#fff;border-radius:50px;">Filter Jobs</button></div>$2',
+        $html,
+        1
+    );
+
+    // Keep the current filter values after a normal GET request.
     $searchValue = e($request->query('search', ''));
-    $html = preg_replace('/(<input class="form-control" name="search" id="search" type="search"[^>]*)(>)/', '$1 value="' . $searchValue . '"$2', $html, 1);
+    $html = preg_replace(
+        '/(<input class="form-control" name="search" id="search" type="search"[^>]*)(>)/',
+        '$1 value="' . $searchValue . '"$2',
+        $html,
+        1
+    );
+
     $locationValue = (string) $request->query('location', '');
     $categoryValue = (string) $request->query('job_category', '');
-    $html = preg_replace('/(<select id="location" name="location" data-picker>)/', '$1', $html, 1);
-    $html = preg_replace('/(<select id="job_category" name="job_category" data-picker>)/', '$1', $html, 1);
-
-    // Mark selected options server-side.
     if ($locationValue !== '') {
         $pattern = '/(<select id="location" name="location" data-picker>.*?<option value="' . preg_quote($locationValue, '/') . '")/s';
         $html = preg_replace($pattern, '$1 selected', $html, 1);
@@ -143,12 +178,21 @@ Route::get('/jobs', function(Request $request){
 
     $jobType = (string) $request->query('job_type', '');
     if ($jobType !== '') {
-        $html = preg_replace('/(<input name="job_type" type="radio" value="' . preg_quote($jobType, '/') . '")/', '$1 checked', $html, 1);
+        $html = preg_replace(
+            '/(<input name="job_type" type="radio" value="' . preg_quote($jobType, '/') . '")/',
+            '$1 checked',
+            $html,
+            1
+        );
     }
-    $sortBy = (string) $request->query('sort_by', '');
-    if ($sortBy !== '') {
-        $html = preg_replace('/(<select id="sort_by" name="sort_by">.*?<option value="' . preg_quote($sortBy, '/') . '")/s', '$1 selected', $html, 1);
-    }
+
+    // Remove the old AJAX/filter-on-change code. Keep only the picker UI plugin.
+    $html = preg_replace(
+        '/<script>\s*\$\(document\)\.ready\(function\(\) \{.*?<\/script>/s',
+        '<script>\n    $(document).ready(function() {\n        $(\'[data-picker]\').picker({\n            search: true,\n            searchAutofocus: false,\n            texts: {\n                trigger: \'Select filter\',\n                search: \'Search...\',\n                noResult: \'No result found\'\n            }\n        });\n    });\n</script>',
+        $html,
+        1
+    );
 
     return $html;
 });
