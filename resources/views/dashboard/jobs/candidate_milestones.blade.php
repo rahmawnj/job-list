@@ -169,104 +169,99 @@
 </div>
 @endsection
 
-{{-- IMPORTANT: the dashboard layout renders @stack('scripts'), not @stack('page-js'). --}}
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const container = document.getElementById('milestoneRows');
-    const addButton = document.getElementById('addMilestone');
+(function () {
+    function initMilestones() {
+        const container = document.getElementById('milestoneRows');
+        const addButton = document.getElementById('addMilestone');
+        if (!container || !addButton || addButton.dataset.milestoneReady === '1') return;
 
-    if (!container || !addButton) return;
+        addButton.dataset.milestoneReady = '1';
 
-    function updateNotesCount(row) {
-        const textarea = row.querySelector('.milestone-notes');
-        const counter = row.querySelector('.current-count');
-        if (textarea && counter) counter.textContent = textarea.value.length;
-    }
+        function updateNotesCount(row) {
+            const textarea = row.querySelector('.milestone-notes');
+            const counter = row.querySelector('.current-count');
+            if (textarea && counter) counter.textContent = textarea.value.length;
+        }
 
-    function reindexRows() {
-        container.querySelectorAll('.milestone-row').forEach(function (row, index) {
-            const title = row.querySelector('.milestone-row-title');
-            const step = row.querySelector('.milestone-step');
-            const status = row.querySelector('.milestone-status');
-            const date = row.querySelector('.milestone-date');
-            const link = row.querySelector('.milestone-link');
-            const notes = row.querySelector('.milestone-notes');
-
-            if (title) title.textContent = 'Recruitment Step ' + (index + 1);
-            if (step) step.name = 'milestones[' + index + '][step]';
-            if (status) status.name = 'milestones[' + index + '][status]';
-            if (date) date.name = 'milestones[' + index + '][date]';
-            if (link) link.name = 'milestones[' + index + '][link]';
-            if (notes) notes.name = 'milestones[' + index + '][notes]';
-        });
-    }
-
-    function bindRow(row) {
-        const notes = row.querySelector('.milestone-notes');
-        if (notes) {
-            notes.addEventListener('input', function () {
-                updateNotesCount(row);
+        function reindexRows() {
+            container.querySelectorAll('.milestone-row').forEach(function (row, index) {
+                const title = row.querySelector('.milestone-row-title');
+                const fields = {
+                    step: row.querySelector('.milestone-step'),
+                    status: row.querySelector('.milestone-status'),
+                    date: row.querySelector('.milestone-date'),
+                    link: row.querySelector('.milestone-link'),
+                    notes: row.querySelector('.milestone-notes')
+                };
+                if (title) title.textContent = 'Recruitment Step ' + (index + 1);
+                Object.keys(fields).forEach(function (key) {
+                    if (fields[key]) fields[key].name = 'milestones[' + index + '][' + key + ']';
+                });
             });
+        }
+
+        function bindNotes(row) {
+            const notes = row.querySelector('.milestone-notes');
+            if (!notes || notes.dataset.bound === '1') return;
+            notes.dataset.bound = '1';
+            notes.addEventListener('input', function () { updateNotesCount(row); });
             updateNotesCount(row);
         }
+
+        container.querySelectorAll('.milestone-row').forEach(bindNotes);
+        reindexRows();
+
+        addButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const rows = container.querySelectorAll('.milestone-row');
+            if (!rows.length) return;
+
+            const clone = rows[rows.length - 1].cloneNode(true);
+            clone.querySelectorAll('select').forEach(function (field) { field.selectedIndex = 0; });
+            clone.querySelectorAll('input, textarea').forEach(function (field) { field.value = ''; });
+            clone.querySelectorAll('[data-bound]').forEach(function (el) { delete el.dataset.bound; });
+
+            const counter = clone.querySelector('.current-count');
+            if (counter) counter.textContent = '0';
+
+            container.appendChild(clone);
+            reindexRows();
+            bindNotes(clone);
+
+            const firstSelect = clone.querySelector('.milestone-step');
+            if (firstSelect) firstSelect.focus();
+        });
+
+        container.addEventListener('click', function (event) {
+            const removeButton = event.target.closest('.remove-milestone');
+            if (!removeButton) return;
+            event.preventDefault();
+            event.stopPropagation();
+
+            const row = removeButton.closest('.milestone-row');
+            const rows = container.querySelectorAll('.milestone-row');
+            if (!row) return;
+
+            if (rows.length > 1) {
+                row.remove();
+            } else {
+                row.querySelectorAll('select').forEach(function (field) { field.selectedIndex = 0; });
+                row.querySelectorAll('input, textarea').forEach(function (field) { field.value = ''; });
+                updateNotesCount(row);
+            }
+            reindexRows();
+        });
     }
 
-    container.querySelectorAll('.milestone-row').forEach(bindRow);
-    reindexRows();
-
-    addButton.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const rows = container.querySelectorAll('.milestone-row');
-        const source = rows[rows.length - 1];
-        if (!source) return;
-
-        const clone = source.cloneNode(true);
-
-        clone.querySelectorAll('select').forEach(function (field) {
-            field.selectedIndex = 0;
-        });
-
-        clone.querySelectorAll('input, textarea').forEach(function (field) {
-            field.value = '';
-        });
-
-        const counter = clone.querySelector('.current-count');
-        if (counter) counter.textContent = '0';
-
-        container.appendChild(clone);
-        reindexRows();
-        bindRow(clone);
-
-        clone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        const firstSelect = clone.querySelector('.milestone-step');
-        if (firstSelect) firstSelect.focus();
-    });
-
-    container.addEventListener('click', function (event) {
-        const removeButton = event.target.closest('.remove-milestone');
-        if (!removeButton) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const row = removeButton.closest('.milestone-row');
-        if (!row) return;
-
-        const rows = container.querySelectorAll('.milestone-row');
-        if (rows.length > 1) {
-            row.remove();
-        } else {
-            row.querySelectorAll('select').forEach(function (field) { field.selectedIndex = 0; });
-            row.querySelectorAll('input, textarea').forEach(function (field) { field.value = ''; });
-            updateNotesCount(row);
-        }
-
-        reindexRows();
-    });
-});
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMilestones);
+    } else {
+        initMilestones();
+    }
+})();
 </script>
 @endpush
