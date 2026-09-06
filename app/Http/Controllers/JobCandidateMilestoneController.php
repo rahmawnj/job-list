@@ -10,6 +10,22 @@ use Illuminate\Validation\Rule;
 
 class JobCandidateMilestoneController extends Controller
 {
+    public function edit(Job $job, JobCandidate $jobCandidate)
+    {
+        if ((int) $jobCandidate->job_id !== (int) $job->id) {
+            abort(404);
+        }
+
+        $jobCandidate->load(['candidate', 'milestones']);
+
+        return view('dashboard.jobs.candidate_milestones', [
+            'title' => 'Recruitment Process',
+            'job' => $job,
+            'jobCandidate' => $jobCandidate,
+            'milestones' => $jobCandidate->milestones->values(),
+        ]);
+    }
+
     public function update(
         Request $request,
         Job $job,
@@ -76,10 +92,9 @@ class JobCandidateMilestoneController extends Controller
 
         if ($validator->fails()) {
             return redirect()
-                ->route('admin.job.candidates', $job->id)
+                ->route('admin.job.candidates.milestones.edit', [$job->id, $jobCandidate->id])
                 ->withErrors($validator)
-                ->withInput()
-                ->with('open_milestone_modal', $jobCandidate->id);
+                ->withInput();
         }
 
         $validated = $validator->validated();
@@ -99,7 +114,6 @@ class JobCandidateMilestoneController extends Controller
 
         return redirect()
             ->route('admin.job.candidates', $job->id)
-            ->with('success', 'Recruitment process updated successfully.')
-            ->with('open_milestone_modal', $jobCandidate->id);
+            ->with('success', 'Recruitment process updated successfully.');
     }
 }
