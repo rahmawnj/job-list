@@ -42,38 +42,23 @@ class JobController extends Controller
 
     public function exportCandidates(Job $job)
     {
-        $job->load(['company','jobcategory','location']);
-        $jobCandidates=$job->jobCandidates()->with(['candidate','milestones'])->orderBy('id','asc')->get();
-        $filename='recruitment-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$job->title).'-'.$job->id.'.xls';
+        $jobCandidates=$job->jobCandidates()->with(['candidate'])->orderBy('id','asc')->get();
+        $filename='candidates-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$job->title).'-'.$job->id.'.xls';
         $escape=static fn($value)=>htmlspecialchars((string)($value??'-'),ENT_QUOTES,'UTF-8');
         $rows='';
-        if($jobCandidates->isEmpty()){$rows='<tr><td colspan="20">No candidate assigned.</td></tr>';}else{
-            foreach($jobCandidates as $jobCandidate){$milestones=$jobCandidate->milestones;if($milestones->isEmpty())$milestones=collect([null]);
-                foreach($milestones as $milestone){$rows.='<tr>'
+        if($jobCandidates->isEmpty()){
+            $rows='<tr><td colspan="4">No candidate assigned.</td></tr>';
+        }else{
+            foreach($jobCandidates as $jobCandidate){
+                $rows.='<tr>'
                     .'<td>'.$escape($jobCandidate->candidate->name??'-').'</td>'
                     .'<td>'.$escape($jobCandidate->candidate->email??'-').'</td>'
                     .'<td>'.$escape($jobCandidate->candidate->phone??'-').'</td>'
                     .'<td>'.$escape($jobCandidate->candidate->cv_url??'-').'</td>'
-                    .'<td>'.$escape($job->company->name??'-').'</td>'
-                    .'<td>'.$escape($job->title).'</td>'
-                    .'<td>'.$escape($job->jobcategory->name??'-').'</td>'
-                    .'<td>'.$escape($job->type??'-').'</td>'
-                    .'<td>'.$escape($job->salary??'-').'</td>'
-                    .'<td>'.$escape($job->total_position??'-').'</td>'
-                    .'<td>'.$escape($job->location->name??'-').'</td>'
-                    .'<td>'.$escape($job->status??'-').'</td>'
-                    .'<td>'.$escape($job->description??'-').'</td>'
-                    .'<td>'.$escape($job->requirement??'-').'</td>'
-                    .'<td>'.$escape($job->created_at?$job->created_at->format('d M Y'):'-').'</td>'
-                    .'<td>'.$escape($milestone?str_replace('_',' ',ucfirst($milestone->step)):'-').'</td>'
-                    .'<td>'.$escape($milestone?str_replace('_',' ',ucfirst($milestone->status??'-')):'-').'</td>'
-                    .'<td>'.$escape($milestone&&$milestone->date?\Carbon\Carbon::parse($milestone->date)->format('d M Y'):'-').'</td>'
-                    .'<td>'.$escape($milestone->notes??'-').'</td>'
-                    .'<td>'.$escape($milestone->link??'-').'</td>'
-                    .'</tr>';}
+                    .'</tr>';
             }
         }
-        $html='<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;vertical-align:top}th{font-weight:bold;background:#f2f2f2;white-space:nowrap}</style></head><body><h2>Recruitment Process Report</h2><table><tr><th>Candidate Name</th><th>Email</th><th>Phone</th><th>CV Link</th><th>Company</th><th>Position / Jabatan</th><th>Job Category</th><th>Job Type</th><th>Salary / Gaji</th><th>Total Position</th><th>Location</th><th>Job Status</th><th>Job Description</th><th>Requirements</th><th>Posted Date</th><th>Recruitment Step</th><th>Step Status</th><th>Step Date</th><th>Notes</th><th>Related Link</th></tr>'.$rows.'</table></body></html>';
+        $html='<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;vertical-align:top}th{font-weight:bold;background:#f2f2f2;white-space:nowrap}</style></head><body><h2>Candidate Report</h2><table><tr><th>Candidate Name</th><th>Email</th><th>Phone</th><th>CV Link</th></tr>'.$rows.'</table></body></html>';
         return response($html,200,['Content-Type'=>'application/vnd.ms-excel; charset=UTF-8','Content-Disposition'=>'attachment; filename="'.$filename.'"','Cache-Control'=>'max-age=0']);
     }
 
