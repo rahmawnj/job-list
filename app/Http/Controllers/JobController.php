@@ -282,6 +282,72 @@ class JobController extends Controller
         ]);
     }
 
+    public function exportCandidates(Job $job)
+    {
+        $jobCandidates = $job->jobCandidates()
+            ->with(['candidate', 'milestones'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $escape = function ($value) {
+            return htmlspecialchars((string) ($value ?? '-'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        };
+
+        $rows = '';
+        foreach ($jobCandidates as $index => $jobCandidate) {
+            $candidate = $jobCandidate->candidate;
+            $milestones = $jobCandidate->milestones;
+
+            if ($milestones->isEmpty()) {
+                $rows .= '<tr>'
+                    . '<td>' . ($index + 1) . '</td>'
+                    . '<td>' . $escape($candidate->name ?? '-') . '</td>'
+                    . '<td>' . $escape($candidate->email ?? '-') . '</td>'
+                    . '<td>' . $escape($candidate->cv_url ?? '-') . '</td>'
+                    . '<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>'
+                    . '</tr>';
+                continue;
+            }
+
+            foreach ($milestones as $milestoneIndex => $milestone) {
+                $date = $milestone->date
+                    ? \Carbon\Carbon::parse($milestone->date)->format('d M Y')
+                    : '-';
+
+                $rows .= '<tr>'
+                    . '<td>' . ($index + 1) . '</td>'
+                    . '<td>' . $escape($candidate->name ?? '-') . '</td>'
+                    . '<td>' . $escape($candidate->email ?? '-') . '</td>'
+                    . '<td>' . $escape($candidate->cv_url ?? '-') . '</td>'
+                    . '<td>' . $escape('Step ' . ($milestoneIndex + 1) . ' - ' . str_replace('_', ' ', ucfirst($milestone->step ?? '-'))) . '</td>'
+                    . '<td>' . $escape(str_replace('_', ' ', ucfirst($milestone->status ?? '-'))) . '</td>'
+                    . '<td>' . $escape($date) . '</td>'
+                    . '<td>' . $escape($milestone->notes ?? '-') . '</td>'
+                    . '<td>' . $escape($milestone->link ?? '-') . '</td>'
+                    . '</tr>';
+            }
+        }
+
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+            . 'table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}'
+            . 'th,td{border:1px solid #d9dfe5;padding:8px;vertical-align:top}'
+            . 'th{background:#e9ecef;font-weight:bold}'
+            . '</style></head><body>'
+            . '<h2>Recruitment Process - ' . $escape($job->title) . '</h2>'
+            . '<table><thead><tr>'
+            . '<th>No</th><th>Candidate</th><th>Email</th><th>CV Link</th>'
+            . '<th>Recruitment Process</th><th>Status</th><th>Date</th><th>Notes</th><th>Related Link</th>'
+            . '</tr></thead><tbody>' . $rows . '</tbody></table>'
+            . '</body></html>';
+
+        $filename = 'recruitment-process-' . $job->id . '-' . now()->format('Y-m-d') . '.xls';
+
+        return response($html, 200, [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     public function storeCandidate(Request $request, Job $job)
     {
         $validated = $request->validate([
