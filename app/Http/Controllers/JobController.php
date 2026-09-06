@@ -42,6 +42,7 @@ class JobController extends Controller
 
     public function exportCandidates(Job $job)
     {
+        $job->load(['company','jobcategory','location']);
         $jobCandidates=$job->jobCandidates()->with(['candidate'])->orderBy('id','asc')->get();
         $filename='candidates-'.preg_replace('/[^A-Za-z0-9_-]+/','-',$job->title).'-'.$job->id.'.xls';
         $escape=static fn($value)=>htmlspecialchars((string)($value??'-'),ENT_QUOTES,'UTF-8');
@@ -58,7 +59,19 @@ class JobController extends Controller
                     .'</tr>';
             }
         }
-        $html='<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;vertical-align:top}th{font-weight:bold;background:#f2f2f2;white-space:nowrap}</style></head><body><h2>Candidate Report</h2><table><tr><th>Candidate Name</th><th>Email</th><th>Phone</th><th>CV Link</th></tr>'.$rows.'</table></body></html>';
+
+        $jobInfo='<h2>Recruitment Process Report</h2>'
+            .'<div><strong>Company:</strong> '.$escape($job->company->name??'-').'</div>'
+            .'<div><strong>Jabatan / Position:</strong> '.$escape($job->title).'</div>'
+            .'<div><strong>Job Category:</strong> '.$escape($job->jobcategory->name??'-').'</div>'
+            .'<div><strong>Job Type:</strong> '.$escape($job->type??'-').'</div>'
+            .'<div><strong>Salary / Gaji:</strong> '.$escape($job->salary??'-').'</div>'
+            .'<div><strong>Total Position:</strong> '.$escape($job->total_position??'-').'</div>'
+            .'<div><strong>Location:</strong> '.$escape($job->location->name??'-').'</div>'
+            .'<div><strong>Job Status:</strong> '.$escape($job->status??'-').'</div>'
+            .'<br>';
+
+        $html='<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;vertical-align:top}th{font-weight:bold;background:#f2f2f2;white-space:nowrap}.job-info{line-height:1.8}</style></head><body><div class="job-info">'.$jobInfo.'</div><table><tr><th>Candidate Name</th><th>Email</th><th>Phone</th><th>CV Link</th></tr>'.$rows.'</table></body></html>';
         return response($html,200,['Content-Type'=>'application/vnd.ms-excel; charset=UTF-8','Content-Disposition'=>'attachment; filename="'.$filename.'"','Cache-Control'=>'max-age=0']);
     }
 
