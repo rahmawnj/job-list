@@ -36,6 +36,9 @@
             <div class="panel-heading">
                 <h4 class="panel-title">{{ $job->title }}</h4>
                 <div class="panel-heading-btn">
+                    <a href="{{ route('admin.job.candidates.export', $job->id) }}" class="btn btn-success btn-sm">
+                        <i class="fa fa-file-excel"></i> Export Excel
+                    </a>
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#candidateModal">
                         <i class="fa fa-user-plus"></i> Assign Candidate
                     </button>
