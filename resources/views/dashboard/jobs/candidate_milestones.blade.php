@@ -60,9 +60,7 @@
                 </div>
 
                 @if(empty(config('milestones.steps', [])) || empty(config('milestones.statuses', [])))
-                    <div class="alert alert-warning">
-                        Recruitment process step/status belum dikonfigurasi di Settings.
-                    </div>
+                    <div class="alert alert-warning">Recruitment process step/status belum dikonfigurasi di Settings.</div>
                 @endif
 
                 <form id="milestoneForm" action="{{ route('admin.job.candidates.milestones.update', [$job->id, $jobCandidate->id]) }}" method="POST">
@@ -79,9 +77,7 @@
                             <div class="milestone-row border rounded p-3 mb-3">
                                 <div class="milestone-row-header">
                                     <h6 class="milestone-row-title">Recruitment Step {{ $index + 1 }}</h6>
-                                    <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" title="Remove"><i class="fa fa-trash"></i></button>
                                 </div>
                                 <div class="row g-3">
                                     <div class="col-md-4">
@@ -113,10 +109,7 @@
                                     <div class="col-12">
                                         <label class="form-label">Notes</label>
                                         <textarea name="milestones[{{ $index }}][notes]" class="form-control milestone-notes" rows="4" maxlength="500" placeholder="Add notes or context for this recruitment step...">{{ data_get($milestone, 'notes') }}</textarea>
-                                        <div class="notes-help">
-                                            <span>Describe important updates, feedback, or follow-up details for this step.</span>
-                                            <span class="notes-count"><span class="current-count">{{ strlen((string) data_get($milestone, 'notes')) }}</span>/500</span>
-                                        </div>
+                                        <div class="notes-help"><span>Describe important updates, feedback, or follow-up details for this step.</span><span class="notes-count"><span class="current-count">{{ strlen((string) data_get($milestone, 'notes')) }}</span>/500</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -176,11 +169,13 @@
 </div>
 @endsection
 
-@push('page-js')
+{{-- IMPORTANT: the dashboard layout renders @stack('scripts'), not @stack('page-js'). --}}
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('milestoneRows');
     const addButton = document.getElementById('addMilestone');
+
     if (!container || !addButton) return;
 
     function updateNotesCount(row) {
@@ -210,15 +205,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function bindRow(row) {
         const notes = row.querySelector('.milestone-notes');
         if (notes) {
-            notes.addEventListener('input', function () { updateNotesCount(row); });
+            notes.addEventListener('input', function () {
+                updateNotesCount(row);
+            });
             updateNotesCount(row);
         }
     }
 
     container.querySelectorAll('.milestone-row').forEach(bindRow);
+    reindexRows();
 
     addButton.addEventListener('click', function (event) {
         event.preventDefault();
+        event.stopPropagation();
 
         const rows = container.querySelectorAll('.milestone-row');
         const source = rows[rows.length - 1];
@@ -226,7 +225,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const clone = source.cloneNode(true);
 
-        clone.querySelectorAll('select, input, textarea').forEach(function (field) {
+        clone.querySelectorAll('select').forEach(function (field) {
+            field.selectedIndex = 0;
+        });
+
+        clone.querySelectorAll('input, textarea').forEach(function (field) {
             field.value = '';
         });
 
@@ -236,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.appendChild(clone);
         reindexRows();
         bindRow(clone);
+
         clone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         const firstSelect = clone.querySelector('.milestone-step');
@@ -247,6 +251,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!removeButton) return;
 
         event.preventDefault();
+        event.stopPropagation();
+
         const row = removeButton.closest('.milestone-row');
         if (!row) return;
 
@@ -254,7 +260,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rows.length > 1) {
             row.remove();
         } else {
-            row.querySelectorAll('select, input, textarea').forEach(function (field) { field.value = ''; });
+            row.querySelectorAll('select').forEach(function (field) { field.selectedIndex = 0; });
+            row.querySelectorAll('input, textarea').forEach(function (field) { field.value = ''; });
             updateNotesCount(row);
         }
 
