@@ -128,6 +128,7 @@ Route::name('admin.')->group(function(){
     Route::resource('/dashboard/users',UserController::class)->middleware('auth');
     Route::get('/dashboard/jobs/apply-jobs/{job}',[JobController::class,'apply_jobs'])->middleware('auth')->name('job.apply-job');
     Route::get('/dashboard/jobs/{job}/candidates',[JobController::class,'candidates'])->middleware('auth')->name('job.candidates');
+    Route::get('/dashboard/jobs/{job}/candidates/export',[JobController::class,'exportCandidates'])->middleware('auth')->name('job.candidates.export');
     Route::post('/dashboard/jobs/{job}/candidates',[JobController::class,'storeCandidate'])->middleware('auth')->name('job.candidates.store');
     Route::put('/dashboard/jobs/{job}/candidates/{jobCandidate}',[JobController::class,'updateCandidate'])->middleware('auth')->name('job.candidates.update');
     Route::get('/dashboard/jobs/{job}/candidates/{jobCandidate}/milestones',[JobCandidateMilestoneController::class,'edit'])->middleware('auth')->name('job.candidates.milestones.edit');
