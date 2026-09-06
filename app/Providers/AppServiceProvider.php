@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\Content;
 use App\Models\Job;
+use App\Http\Controllers\JobCandidateMilestoneController;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Paginator::useBootstrap();
+
+        Route::get('/dashboard/jobs/{job}/candidates/{jobCandidate}/milestones', [JobCandidateMilestoneController::class, 'edit'])
+            ->middleware('auth')
+            ->name('admin.job.candidates.milestones.edit');
 
         // Milestone steps/statuses are managed from the Setting page.
         // Keep config values in sync for every web request so the
