@@ -3,18 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Job;
-use App\Mail\MailNotify;
-use App\Models\ApplyJob;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class ApplyJobController extends Controller
 {
     /**
-     * Open the user's default mail application for a job application.
+     * Open Gmail compose directly for a job application.
      *
-     * No application data or CV is stored locally when the user clicks
-     * Apply Job from the public jobs page.
+     * No application data or CV is stored locally or in the database.
      */
     public function apply_job($id_job)
     {
@@ -30,19 +26,21 @@ class ApplyJobController extends Controller
             . "Terima kasih.\n\n"
             . "Hormat saya,\n";
 
-        $mailto = 'mailto:' . $recipient
-            . '?subject=' . rawurlencode($subject)
+        // Gmail web compose URL. This opens Gmail in the browser with the
+        // recipient, subject, and body already filled in.
+        $gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+            . '&to=' . rawurlencode($recipient)
+            . '&su=' . rawurlencode($subject)
             . '&body=' . rawurlencode($body);
 
-        return redirect()->away($mailto);
+        return redirect()->away($gmailUrl);
     }
 
     /**
      * Legacy POST endpoint.
      *
-     * The public Apply Job flow no longer uses this endpoint. It is kept so
-     * old links/forms do not cause a missing-route error, but it does not
-     * save uploaded files or create an ApplyJob record anymore.
+     * Kept so old links/forms do not cause a missing-route error. It no
+     * longer saves uploaded files or creates an ApplyJob record.
      */
     public function apply_job_post(Request $request)
     {
