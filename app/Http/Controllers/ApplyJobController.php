@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ApplyJobController extends Controller
 {
     /**
-     * Open Gmail compose directly for a job application.
+     * Open the user's default mail application for a job application.
      *
      * No application data or CV is stored locally or in the database.
      */
@@ -26,14 +26,13 @@ class ApplyJobController extends Controller
             . "Terima kasih.\n\n"
             . "Hormat saya,\n";
 
-        // Gmail web compose URL. This opens Gmail in the browser with the
-        // recipient, subject, and body already filled in.
-        $gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
-            . '&to=' . rawurlencode($recipient)
-            . '&su=' . rawurlencode($subject)
+        // mailto opens the user's configured default email application
+        // (Gmail, Outlook, Apple Mail, etc.).
+        $mailto = 'mailto:' . $recipient
+            . '?subject=' . rawurlencode($subject)
             . '&body=' . rawurlencode($body);
 
-        return redirect()->away($gmailUrl);
+        return redirect()->away($mailto);
     }
 
     /**
