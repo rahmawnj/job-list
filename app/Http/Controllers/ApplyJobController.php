@@ -9,8 +9,11 @@ use Illuminate\Http\Request;
 class ApplyJobController extends Controller
 {
     /**
-     * Open Gmail compose for a job application.
+     * Open the email composer for a job application.
      *
+     * On mobile, use mailto: so the device can open the installed email app
+     * (including Gmail) instead of forcing Gmail web login.
+     * On desktop, keep the Gmail web compose experience.
      * No application data or CV is stored locally or in the database.
      */
     public function apply_job($id_job)
@@ -27,7 +30,22 @@ class ApplyJobController extends Controller
             . "Terima kasih.\n\n"
             . "Hormat saya,\n";
 
-        // Open Gmail web compose with the recipient, subject, and body prefilled.
+        $userAgent = (string) request()->userAgent();
+        $isMobile = preg_match(
+            '/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i',
+            $userAgent
+        );
+
+        if ($isMobile) {
+            $mailtoUrl = 'mailto:' . $recipient
+                . '?subject=' . rawurlencode($subject)
+                . '&body=' . rawurlencode($body);
+
+            return redirect()->away($mailtoUrl);
+        }
+
+        // Desktop: open Gmail web compose with the recipient, subject,
+        // and body prefilled.
         $gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
             . '&to=' . rawurlencode($recipient)
             . '&su=' . rawurlencode($subject)
