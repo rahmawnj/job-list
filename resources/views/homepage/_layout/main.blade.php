@@ -26,7 +26,6 @@
         @stack('page-css')
         <link rel="stylesheet" href="{{asset('assets/plugins/floating-whatsapp-master/floating-wpp.min.css')}}">
         <style>
-            /* Keep the floating WhatsApp widget above every page section/filter/dropdown. */
             .floating-wpp {
                 position: fixed !important;
                 z-index: 2147483647 !important;
@@ -36,15 +35,30 @@
                 z-index: 2147483647 !important;
             }
 
-            /* Keep homepage stacking levels consistent: We are Hiring and its filter use one layer. */
+            /* Keep homepage job filters above the job cards below them. */
             .featured-job-area,
             .featured-job-area .container,
             .featured-job-area .row,
-            .featured-job-area .col-xl-10,
-            .job-filter-card,
-            #job_data {
+            .featured-job-area .col-xl-10 {
                 position: relative;
                 z-index: 100 !important;
+            }
+
+            .featured-job-area .job-filter-card {
+                position: relative !important;
+                z-index: 1000 !important;
+                overflow: visible !important;
+            }
+
+            .featured-job-area .job-filter-card .picker,
+            .featured-job-area .job-filter-card .picker .pc-select {
+                position: relative !important;
+                z-index: 1001 !important;
+            }
+
+            .featured-job-area #job_data {
+                position: relative !important;
+                z-index: 1 !important;
             }
 
             @media (max-width: 767px) {
@@ -84,7 +98,6 @@
                     object-fit: contain;
                 }
 
-                /* Mobile job cards: move the company image above the job information and center it. */
                 .single-job-items .job-items {
                     flex-direction: column !important;
                     align-items: center !important;
@@ -106,7 +119,6 @@
             }
         </style>
         <style>
-            /* Refined mobile hero typography: clear visual hierarchy without oversized text. */
             @media (max-width: 767px) {
                 .hero-home-overlay .hero__caption {
                     width: 100%;
