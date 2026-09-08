@@ -27,7 +27,11 @@
         <style>
             .floating-wpp { position: fixed !important; z-index: 2147483647 !important; }
             .floating-wpp .floating-wpp-button, .floating-wpp .floating-wpp-popup { z-index: 2147483647 !important; }
-            .featured-job-area, .featured-job-area .container, .featured-job-area .row, .featured-job-area .col-xl-10, .job-filter-card, #job_data { position: relative; z-index: 100 !important; }
+            .featured-job-area, .featured-job-area .container, .featured-job-area .row, .featured-job-area .col-xl-10, .job-filter-card { position: relative; z-index: 100 !important; }
+            .featured-job-area .job-filter-card { position: relative !important; z-index: 1000 !important; overflow: visible !important; }
+            .featured-job-area .job-filter-card .picker, .featured-job-area .job-filter-card .picker .pc-select { position: relative !important; z-index: 1001 !important; }
+            .featured-job-area #job_data { position: relative !important; z-index: 1 !important; }
+            .job-filter-card .picker .pc-dropdown, .job-filter-card .picker .picker-dropdown, .job-filter-card .picker [class*="dropdown"] { z-index: 2147483000 !important; }
             @media (max-width: 767px) {
                 .our-services .row > .col-xl-3,.our-services .row > .col-lg-3,.our-services .row > .col-md-4,.our-services .row > .col-sm-6 { flex: 0 0 50% !important; max-width: 50% !important; width: 50% !important; padding-left: 7px !important; padding-right: 7px !important; }
                 .our-services .row { margin-left: -7px !important; margin-right: -7px !important; row-gap: 14px !important; }
@@ -47,12 +51,7 @@
                 .hero__caption .hero-title-sub { margin-bottom: 10px !important; font-size: clamp(18px, 5vw, 23px) !important; line-height: 1.22 !important; font-weight: 600 !important; letter-spacing: -0.015em; max-width: 92%; overflow-wrap: break-word; }
                 .hero__caption .hero-description { font-size: clamp(13px, 3.7vw, 16px) !important; line-height: 1.55 !important; font-weight: 400 !important; max-width: 92%; overflow-wrap: break-word; }
             }
-            @media (max-width: 380px) {
-                .hero-home-overlay .hero__caption { padding-left: 14px; padding-right: 14px; }
-                .hero__caption .hero-title-main { font-size: 27px !important; }
-                .hero__caption .hero-title-sub { font-size: 17px !important; }
-                .hero__caption .hero-description { font-size: 12.5px !important; }
-            }
+            @media (max-width: 380px) { .hero-home-overlay .hero__caption { padding-left: 14px; padding-right: 14px; } .hero__caption .hero-title-main { font-size: 27px !important; } .hero__caption .hero-title-sub { font-size: 17px !important; } .hero__caption .hero-description { font-size: 12.5px !important; } }
         </style>
    </head>
    <body>
