@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html class="no-js" lang="zxx">
     <head>
@@ -42,6 +41,12 @@
                 .single-job-items .job-items { flex-direction: column !important; align-items: center !important; }
                 .single-job-items .company-img { margin-left: auto !important; margin-right: auto !important; flex: 0 0 auto !important; }
                 .single-job-items .job-tittle { width: 100% !important; max-width: 100% !important; padding-left: 0 !important; align-items: center !important; text-align: center !important; }
+                .featured-job-area .job-filter-card .row > [class*="col-"] { position: relative; }
+                .featured-job-area .job-filter-card .picker { z-index: 1 !important; }
+                .featured-job-area .job-filter-card .picker.is-filter-active { z-index: 100000 !important; }
+                .featured-job-area .job-filter-card .picker.is-filter-active .pc-dropdown,
+                .featured-job-area .job-filter-card .picker.is-filter-active .picker-dropdown,
+                .featured-job-area .job-filter-card .picker.is-filter-active [class*="dropdown"] { z-index: 100001 !important; }
             }
         </style>
         <style>
@@ -64,6 +69,7 @@
     <script src="{{asset('assets/dashboard/plugins/select-picker/dist/picker.min.js')}}"></script>
     @stack('scripts')
     <script>$(function(){ $(document).on('sp-change','.job-filter-card .job-filter-select',function(){ $(this).trigger('change'); }); });</script>
+    <script>$(function(){ $('.job-filter-card .job-filter-select').each(function(){ var $select=$(this),$picker=$select.closest('.picker'); if(!$picker.length)return; $select.on('click focus',function(){ $('.job-filter-card .picker').removeClass('is-filter-active'); $picker.addClass('is-filter-active'); }); $picker.on('click',function(){ $('.job-filter-card .picker').removeClass('is-filter-active'); $picker.addClass('is-filter-active'); }); }); $(document).on('click',function(e){ if(!$(e.target).closest('.job-filter-card .picker').length) $('.job-filter-card .picker').removeClass('is-filter-active'); }); });</script>
     <script>$(function(){ var topCategoryMap=@json(\App\Models\Jobcategory::where('is_top_category',true)->pluck('id','name')); $('.our-services .single-services').each(function(){var $card=$(this),categoryName=$.trim($card.find('.services-cap h5').text()),categoryId=topCategoryMap[categoryName],$link=$card.closest('a');if(categoryId&&$link.length)$link.attr('href','/jobs?job_category='+encodeURIComponent(categoryId));}); });</script>
     <script>$(function(){if(window.location.pathname.replace(/\/+$/,'')!=='/jobs')return;var $form=$('.jobs-filter-form');if(!$form.length)return;$(document).off('click','.pagination a');$('#search').off('keyup');$('#sort_by').off('change');$('[name="job_type"]').off('change');$('#job_category').off('change');$('#location').off('change');$form.attr('action','/jobs').attr('method','GET');$('#location').attr('name','location');$('#job_category').attr('name','job_category');var params=new URLSearchParams(window.location.search),locationValue=params.get('location')||'',categoryValue=params.get('job_category')||'',jobTypeValue=params.get('job_type')||'';$('#location').val(locationValue);$('#job_category').val(categoryValue);$('[name="job_type"]').prop('checked',false);if(jobTypeValue)$('[name="job_type"][value="'+jobTypeValue+'"]').prop('checked',true);if(!$form.find('.jobs-filter-submit').length)$form.append('<button type="submit" class="jobs-filter-submit btn btn-primary w-100 mt-4">Filter</button>');$('#sort_by').on('change',function(){var url=new URL('/jobs',window.location.origin);params.forEach(function(value,key){url.searchParams.set(key,value);});if($(this).val())url.searchParams.set('sort_by',$(this).val());else url.searchParams.delete('sort_by');window.location.href=url.toString();});$('#sort_by').val(params.get('sort_by')||'');});</script>
     <script>$(function(){if(window.location.pathname.replace(/\/+$/,'')!=='/jobs')return;var $typeFilter=$('.jobs-type-filter');if(!$typeFilter.length||$typeFilter.find('input[name="job_type"][value=""]').length)return;$typeFilter.prepend('<label class="container">All Job Types<input name="job_type" type="radio" value="" checked><span class="checkmark"></span></label>');var params=new URLSearchParams(window.location.search),currentType=params.get('job_type');if(currentType){$typeFilter.find('input[name="job_type"][value=""]').prop('checked',false);$typeFilter.find('input[name="job_type"][value="'+currentType+'"]').prop('checked',true);}});</script>
