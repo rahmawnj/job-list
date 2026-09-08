@@ -14,13 +14,13 @@ class ApplyJobController extends Controller
      */
     public function apply_job($id_job)
     {
-        $job = Job::findOrFail($id_job);
+        $job = Job::with('company')->findOrFail($id_job);
 
-        // Keep the existing recruitment email used by the application flow.
-        $recipient = 'liim@toptalentscosulting.co.id';
+        // Get the application recipient from the company attached to this job.
+        $recipient = $job->company->email;
         $subject = 'Lamaran : ' . $job->title;
 
-        $body = "Halo Tim Top Talents Consulting,\n\n"
+        $body = "Halo Tim {$job->company->name},\n\n"
             . "Saya tertarik untuk melamar posisi {$job->title}.\n\n"
             . "Berikut saya sampaikan lamaran saya untuk dapat dipertimbangkan.\n\n"
             . "Terima kasih.\n\n"
