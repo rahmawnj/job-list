@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Content;
 use App\Models\Job;
 use Illuminate\Http\Request;
 
@@ -14,13 +15,13 @@ class ApplyJobController extends Controller
      */
     public function apply_job($id_job)
     {
-        $job = Job::with('company')->findOrFail($id_job);
+        $job = Job::findOrFail($id_job);
 
-        // Get the application recipient from the company attached to this job.
-        $recipient = $job->company->email;
+        // Get the application recipient from the Email Apply content setting.
+        $recipient = Content::where('name', 'email_apply')->value('description');
         $subject = 'Lamaran : ' . $job->title;
 
-        $body = "Halo Tim {$job->company->name},\n\n"
+        $body = "Halo Tim Top Talents Consulting,\n\n"
             . "Saya tertarik untuk melamar posisi {$job->title}.\n\n"
             . "Berikut saya sampaikan lamaran saya untuk dapat dipertimbangkan.\n\n"
             . "Terima kasih.\n\n"
