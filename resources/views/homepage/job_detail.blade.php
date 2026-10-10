@@ -1,8 +1,8 @@
 @extends('homepage._layout.main')
 
 @php
-    $jobDescriptionText = trim(preg_replace('/\\s+/u', ' ', strip_tags((string) ($job->description ?? ''))));
-    $jobMetaDescription = \\Illuminate\\Support\\Str::limit(
+    $jobDescriptionText = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($job->description ?? ''))));
+    $jobMetaDescription = \Illuminate\Support\Str::limit(
         $jobDescriptionText !== '' ? $jobDescriptionText : ('Explore the ' . $job->title . ' vacancy at ' . (optional($job->company)->name ?? 'our hiring partner') . '.'),
         155,
         '...'
@@ -54,7 +54,7 @@
     }
 @endphp
 
-@section('title', $job->title . ' - Job Vacancy | ' . (trim((string) (optional(\\App\\Models\\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting')) ?: 'Top Talents Consulting'))
+@section('title', $job->title . ' - Job Vacancy | ' . (trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting')) ?: 'Top Talents Consulting'))
 @section('meta_description', $jobMetaDescription)
 @section('canonical_url', url('/job/' . $job->id))
 @section('meta_image', $job->image ? asset('storage/' . $job->image) : asset('Logo.png'))
