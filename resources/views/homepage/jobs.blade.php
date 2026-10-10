@@ -1,5 +1,10 @@
 @extends('homepage._layout.main')
 
+@section('title', 'Latest Job Vacancies | ' . (trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting')) ?: 'Top Talents Consulting'))
+@section('meta_description', 'Explore the latest job vacancies by category, location, and employment type. Find opportunities and apply through ' . (trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting')) ?: 'Top Talents Consulting') . '.')
+@section('canonical_url', request()->url() . ((int) request('page', 1) > 1 ? '?page=' . (int) request('page') : ''))
+@section('meta_robots', request()->except('page') ? 'noindex,follow' : 'index,follow')
+
 @section('container')
 @push('page-css')
 <link href="{{ asset('assets/dashboard/plugins/select-picker/dist/picker.min.css') }}" rel="stylesheet">
