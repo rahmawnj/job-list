@@ -38,13 +38,14 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>                    </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 
