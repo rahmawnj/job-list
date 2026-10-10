@@ -91,7 +91,7 @@ Route::get('/get-more-jobs', function(Request $request){
     return view('homepage.job_data',['jobs'=>$jobs->paginate(5)->withQueryString(),'count_job'=>(clone $jobs)->count()])->render();
 })->name('jobs.get-more-jobs');
 Route::get('/api/clients', function () {
-    $clients = \\App\\Models\\Company::query()
+    $clients = \App\Models\Company::query()
         ->where('show', 'active')
         ->whereNotNull('logo')
         ->select(['id', 'name', 'logo'])
