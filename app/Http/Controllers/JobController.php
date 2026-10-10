@@ -35,6 +35,23 @@ class JobController extends Controller
     public function destroy(Job $job){Storage::delete([$job->image]);Job::destroy($job->id);return redirect('/dashboard/jobs')->with('success','Job has been Deleted');}
     public function dump(){return view('dashboard.jobs.dump',['title'=>'Jobs Dump','jobs'=>Job::onlyTrashed()->get()]);}
     public function dump_destroy($id){Job::withTrashed()->find($id)->forceDelete();return redirect('/dashboard/jobs/dump')->with('success','Job has been Deleted');}
+    public function apply_delete($id)
+    {
+        $applyJob = ApplyJob::findOrFail($id);
+        $jobId = $applyJob->job_id;
+
+        // Remove the uploaded application document from the public disk, if present.
+        if (!empty($applyJob->url)) {
+            Storage::disk('public')->delete($applyJob->url);
+        }
+
+        $applyJob->delete();
+
+        return redirect()
+            ->route('admin.job.apply-job', $jobId)
+            ->with('success', 'Lamaran kandidat berhasil dihapus.');
+    }
+
     public function apply_jobs(Job $job){$applyjobs=ApplyJob::where('job_id',$job->id)->orderBy('created_at','desc')->get();return view('dashboard.jobs.apply',['title'=>'Jobs','job'=>$job,'applyjobs'=>$applyjobs]);}
     public function apply_job_detail($apply_job_id){$apply_job=ApplyJob::findOrFail($apply_job_id);$apply_job->update(['read'=>1]);return view('dashboard.jobs.apply_detail',['apply_job'=>$apply_job,'title'=>'Jobs']);}
     public function update_apply_job_detail(Request $request,ApplyJob $apply_job){$request->validate(['status'=>'required|in:pending,approved,rejected']);$apply_job->update(['note'=>$request->note,'status'=>$request->status]);return redirect()->back()->with('success','Catatan dan status lamaran berhasil diperbarui.');}
