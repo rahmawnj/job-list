@@ -90,6 +90,25 @@ Route::get('/get-more-jobs', function(Request $request){
     $jobs->orderBy('updated_at',$request->sort_by==='oldest'?'asc':'desc')->orderBy('created_at',$request->sort_by==='oldest'?'asc':'desc')->orderBy('id',$request->sort_by==='oldest'?'asc':'desc');
     return view('homepage.job_data',['jobs'=>$jobs->paginate(5)->withQueryString(),'count_job'=>(clone $jobs)->count()])->render();
 })->name('jobs.get-more-jobs');
+Route::get('/api/clients', function () {
+    $clients = \\App\\Models\\Company::query()
+        ->where('show', 'active')
+        ->whereNotNull('logo')
+        ->select(['id', 'name', 'logo'])
+        ->orderBy('id')
+        ->get()
+        ->map(function ($company) {
+            return [
+                'id' => $company->id,
+                'name' => $company->name,
+                'logo_url' => asset('storage/' . $company->logo),
+            ];
+        });
+
+    return response()->json(['data' => $clients])
+        ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+})->name('api.clients');
+
 Route::get('/about',fn()=>view('homepage.about'));
 Route::get('/contact',fn()=>view('homepage.contact'));
 Route::post('/send_message',function(Request $request){Message::create(['name'=>$request->name,'subject'=>$request->subject,'email'=>$request->email,'status'=>'unread','message'=>$request->message]);return redirect('/contact')->with('success','Your Message has been send');});
