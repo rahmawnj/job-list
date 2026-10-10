@@ -85,7 +85,7 @@ class CandidateController extends Controller
                     })->values(),
                     'latest_milestone' => $latestStep
                         ? str_replace('_', ' ', ucfirst($latestStep))
-                            . ($latestDate ? ' · ' . \\Carbon\\Carbon::parse($latestDate)->format('d-m-Y') : '')
+                            . ($latestDate ? ' · ' . \Carbon\Carbon::parse($latestDate)->format('d-m-Y') : '')
                         : '-',
                     'linkedin_url' => $candidate->linkedin_url,
                     'cv_url' => $candidate->cv_url,
