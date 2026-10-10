@@ -1,10 +1,33 @@
 <!doctype html>
-<html class="no-js" lang="zxx">
+<html class="no-js" lang="en">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>{{App\Models\Content::where('name', 'name')->first()->description}}</title>
-        <meta name="description" content="{{App\Models\Content::where('name', 'name')->first()->description}} {{App\Models\Content::where('name', 'hero_description')->first()->description}} {{App\Models\Content::where('name', 'about')->first()->description}}">
+        @php
+            $siteName = trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? config('app.name', 'Top Talents Consulting')));
+            $siteName = $siteName !== '' ? $siteName : 'Top Talents Consulting';
+            $defaultMetaDescription = trim(strip_tags($siteName . ' ' . (optional(\App\Models\Content::where('name', 'hero_description')->first())->description ?? '') . ' ' . (optional(\App\Models\Content::where('name', 'about')->first())->description ?? '')));
+            $pageTitle = trim((string) $__env->yieldContent('title')) ?: $siteName;
+            $pageDescription = trim((string) $__env->yieldContent('meta_description')) ?: \Illuminate\Support\Str::limit($defaultMetaDescription, 155, '...');
+            $pageCanonical = trim((string) $__env->yieldContent('canonical_url')) ?: url()->current();
+            $pageImage = trim((string) $__env->yieldContent('meta_image')) ?: asset('Logo.png');
+            $pageRobots = trim((string) $__env->yieldContent('meta_robots')) ?: 'index,follow';
+        @endphp
+        <title>{{ $pageTitle }}</title>
+        <meta name="description" content="{{ $pageDescription }}">
+        <meta name="robots" content="{{ $pageRobots }}">
+        <link rel="canonical" href="{{ $pageCanonical }}">
+        <meta property="og:locale" content="en_US">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $siteName }}">
+        <meta property="og:title" content="{{ $pageTitle }}">
+        <meta property="og:description" content="{{ $pageDescription }}">
+        <meta property="og:url" content="{{ $pageCanonical }}">
+        <meta property="og:image" content="{{ $pageImage }}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $pageTitle }}">
+        <meta name="twitter:description" content="{{ $pageDescription }}">
+        <meta name="twitter:image" content="{{ $pageImage }}">
         @stack('meta')
         <meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="shortcut icon" type="image/x-icon" href="{{asset('Logo.png')}}">
