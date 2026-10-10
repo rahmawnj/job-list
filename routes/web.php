@@ -51,6 +51,48 @@ function activeJobsQuery()
     return Job::where('status', 'active')->orderBy('updated_at', 'desc')->orderBy('created_at', 'desc')->orderBy('id', 'desc');
 }
 
+Route::get('/sitemap.xml', function () {
+    $urls = [
+        ['loc' => url('/'), 'lastmod' => null],
+        ['loc' => url('/jobs'), 'lastmod' => null],
+        ['loc' => url('/about'), 'lastmod' => null],
+        ['loc' => url('/contact'), 'lastmod' => null],
+    ];
+
+    Job::query()
+        ->where('status', 'active')
+        ->select(['id', 'updated_at'])
+        ->orderBy('id')
+        ->get()
+        ->each(function ($job) use (&$urls) {
+            $urls[] = [
+                'loc' => url('/job/' . $job->id),
+                'lastmod' => optional($job->updated_at)->toAtomString(),
+            ];
+        });
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($urls as $item) {
+        $xml .= "  <url><loc>" . htmlspecialchars($item['loc'], ENT_XML1 | ENT_QUOTES, 'UTF-8') . "</loc>";
+        if (!empty($item['lastmod'])) {
+            $xml .= '<lastmod>' . htmlspecialchars($item['lastmod'], ENT_XML1 | ENT_QUOTES, 'UTF-8') . '</lastmod>';
+        }
+        $xml .= "</url>\n";
+    }
+    $xml .= '</urlset>';
+
+    return response($xml, 200)
+        ->header('Content-Type', 'application/xml; charset=UTF-8')
+        ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+})->name('sitemap');
+
+Route::get('/robots.txt', function () {
+    return response("User-agent: *\nAllow: /\nSitemap: " . url('/sitemap.xml') . "\n", 200)
+        ->header('Content-Type', 'text/plain; charset=UTF-8')
+        ->header('Cache-Control', 'public, max-age=3600');
+})->name('robots');
+
 function appendHomepageAjaxStateScript($html)
 {
     $script = <<<'HTML'
@@ -70,7 +112,7 @@ Route::get('/', function(){
     return appendHomepageAjaxStateScript(view('homepage.index',['jobs'=>$jobs->paginate(5),'count_job'=>$jobs->count()])->render());
 });
 Route::get('/home', fn()=>redirect('/'));
-Route::get('/job/{id_job}', fn($id)=>view('homepage.job_detail',['id'=>$id]));
+Route::get('/job/{id_job}', function ($id) {\n    $job = Job::query()->with(['company', 'jobcategory', 'location'])->where('status', 'active')->findOrFail($id);\n    return view('homepage.job_detail', ['job' => $job, 'id' => $job->id]);\n})->whereNumber('id_job')->name('public.jobs.show');
 Route::post('/jobs', function(Request $request){
     insertVisitor(getUserIpAddr(), '/jobs'); $jobs=activeJobsQuery();
     if($request->filled('search')){$search=$request->search;$jobs->where(function($q)use($search){$q->where('title','like',"%{$search}%")->orWhere('type','like',"%{$search}%")->orWhere('salary','like',"%{$search}%")->orWhere('description','like',"%{$search}%")->orWhereHas('jobcategory',fn($q)=>$q->where('name','like',"%{$search}%"));});}
