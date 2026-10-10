@@ -98,5 +98,5 @@
         </div>
     </div>
 
-    <a href="{{ route('admin.candidates.index') }}" class="btn btn-default">Back</a>
+    <a href="{{ route('admin.candidates.index') }}" class="btn btn-primary">Back</a>
 @endsection
