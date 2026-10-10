@@ -1,7 +1,68 @@
 @extends('homepage._layout.main')
 
+@php
+    $jobDescriptionText = trim(preg_replace('/\\s+/u', ' ', strip_tags((string) ($job->description ?? ''))));
+    $jobMetaDescription = \\Illuminate\\Support\\Str::limit(
+        $jobDescriptionText !== '' ? $jobDescriptionText : ('Explore the ' . $job->title . ' vacancy at ' . (optional($job->company)->name ?? 'our hiring partner') . '.'),
+        155,
+        '...'
+    );
+    $jobTypeKey = strtolower(str_replace([' ', '-'], '_', (string) $job->type));
+    $employmentTypeMap = [
+        'full_time' => 'FULL_TIME',
+        'part_time' => 'PART_TIME',
+        'contract' => 'CONTRACTOR',
+        'contractor' => 'CONTRACTOR',
+        'temporary' => 'TEMPORARY',
+        'intern' => 'INTERN',
+        'internship' => 'INTERN',
+        'freelance' => 'CONTRACTOR',
+    ];
+    $jobPostingSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'JobPosting',
+        'title' => (string) $job->title,
+        'description' => $jobDescriptionText !== '' ? $jobDescriptionText : (string) $job->title,
+        'datePosted' => optional($job->created_at)->toDateString(),
+        'hiringOrganization' => array_filter([
+            '@type' => 'Organization',
+            'name' => optional($job->company)->name,
+            'logo' => optional($job->company)->logo ? asset('storage/' . $job->company->logo) : null,
+        ]),
+        'url' => url('/job/' . $job->id),
+    ];
+    if (isset($employmentTypeMap[$jobTypeKey])) {
+        $jobPostingSchema['employmentType'] = $employmentTypeMap[$jobTypeKey];
+    }
+    if (optional($job->location)->name) {
+        $jobPostingSchema['jobLocation'] = [
+            '@type' => 'Place',
+            'address' => [
+                '@type' => 'PostalAddress',
+                'addressLocality' => $job->location->name,
+                'addressCountry' => 'ID',
+            ],
+        ];
+    }
+    if ($jobTypeKey === 'remote') {
+        $jobPostingSchema['jobLocationType'] = 'TELECOMMUTE';
+        $jobPostingSchema['applicantLocationRequirements'] = [
+            '@type' => 'Country',
+            'name' => 'Indonesia',
+        ];
+        unset($jobPostingSchema['jobLocation']);
+    }
+@endphp
+
+@section('title', $job->title . ' - Job Vacancy | ' . (trim((string) (optional(\\App\\Models\\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting')) ?: 'Top Talents Consulting'))
+@section('meta_description', $jobMetaDescription)
+@section('canonical_url', url('/job/' . $job->id))
+@section('meta_image', $job->image ? asset('storage/' . $job->image) : asset('Logo.png'))
+
 @push('meta')
-<meta name="description" content="{{\App\Models\Job::find($id)->title}}">
+@if(!empty($jobPostingSchema['hiringOrganization']['name']) && !empty($jobPostingSchema['datePosted']))
+<script type="application/ld+json">@json($jobPostingSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
+@endif
 @endpush
 
 @section('container')
@@ -12,7 +73,7 @@
     min-height: 450px !important;
 }
 
-.hero-cap h2 {
+.hero-cap h2, .hero-cap .job-detail-page-title {
     color: #fff;
     font-size: 50px;
     font-weight: 700;
@@ -23,7 +84,7 @@
 }
 
 @media (max-width: 767px) {
-    .hero-cap h2 {
+    .hero-cap h2, .hero-cap .job-detail-page-title {
         font-size: 40px;
     }
 }
@@ -458,7 +519,7 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
-                        <h2>{{App\Models\Job::find($id)->jobcategory->name}}</h2>
+                        <h1 class="job-detail-page-title">{{$job->title}}</h1>
                     </div>
                 </div>
             </div>
@@ -472,14 +533,14 @@
                 <div class="single-job-items mb-30">
                     <div class="job-items align-items-center">
                         <div class="company-img">
-                            <img src="{{asset('storage/' . App\Models\Job::find($id)->image)}}" alt="Company Logo">
+                            <img src="{{asset('storage/' . $job->image)}}" alt="{{ optional($job->company)->name ? $job->company->name . ' logo' : $job->title }}" loading="lazy" decoding="async">
                         </div>
                         <div class="job-tittle">
-                            <h4>{{App\Models\Job::find($id)->title}}</h4>
+                            <h4>{{$job->title}}</h4>
                             <ul>
-                                <li>{{App\Models\Job::find($id)->jobcategory->name}}</li>
-                                <li><i class="fas fa-map-marker-alt"></i> {{App\Models\Job::find($id)->location->name}}</li>
-                                <li>{{App\Models\Job::find($id)->salary}}</li>
+                                <li>{{$job->jobcategory->name}}</li>
+                                <li><i class="fas fa-map-marker-alt"></i> {{$job->location->name}}</li>
+                                <li>{{$job->salary}}</li>
                             </ul>
                         </div>
                     </div>
@@ -489,14 +550,14 @@
                         <div class="small-section-tittle">
                             <h4>Job Description</h4>
                         </div>
-                        {!! App\Models\Job::find($id)->description !!}
+                        {!! $job->description !!}
                     </div>
                    
                     <div class="post-details2">
                         <div class="small-section-tittle">
                             <h4>Requirement, Qualification & Experience</h4>
                         </div>
-                        {!! App\Models\Job::find($id)->requirement !!}
+                        {!! $job->requirement !!}
                     </div>
                 </div>
             </div>
@@ -509,23 +570,23 @@
                     <ul>
                         <li>
                             <span class="overview-label">Posted date:</span>
-                            <span class="overview-value">{{\Carbon\Carbon::parse(App\Models\Job::find($id)->created_at)->format('d M Y')}}</span>
+                            <span class="overview-value">{{\Carbon\Carbon::parse($job->created_at)->format('d M Y')}}</span>
                         </li>
                         <li>
                             <span class="overview-label">Location:</span>
-                            <span class="overview-value">{{App\Models\Job::find($id)->location->name}}</span>
+                            <span class="overview-value">{{$job->location->name}}</span>
                         </li>
                         <li>
                             <span class="overview-label">Total Position:</span>
-                            <span class="overview-value">{{App\Models\Job::find($id)->total_position}}</span>
+                            <span class="overview-value">{{$job->total_position}}</span>
                         </li>
                         <li>
                             <span class="overview-label">Job Type:</span>
-                            <span class="overview-value">{{ucwords(str_replace("_", " ", App\Models\Job::find($id)->type))}}</span>
+                            <span class="overview-value">{{ucwords(str_replace("_", " ", $job->type))}}</span>
                         </li>
                         <li>
                             <span class="overview-label">Salary:</span>
-                            <span class="overview-value">{{App\Models\Job::find($id)->salary}}</span>
+                            <span class="overview-value">{{$job->salary}}</span>
                         </li>
                     </ul>
                     <div class="apply-actions">
@@ -536,7 +597,7 @@
                             type="button"
                             class="job-share-btn"
                             id="job-share-btn"
-                            data-share-url="{{ url('/job/' . $id) }}"
+                            data-share-url="{{ url('/job/' . $job->id) }}"
                             aria-label="Share this job"
                             title="Share this job"
                         >
