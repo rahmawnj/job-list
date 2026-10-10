@@ -1,7 +1,33 @@
 @extends('homepage._layout.main')
 
+@php
+    $contactPageTitle = trim((string) (optional(\App\Models\Content::where('name', 'title_contact_hero')->first())->description ?? 'Contact Us'));
+    $contactSiteName = trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting'));
+    $contactAddress = trim(strip_tags((string) (optional(\App\Models\Content::where('name', 'address')->first())->description ?? '')));
+    $contactPhone = trim(strip_tags((string) (optional(\App\Models\Content::where('name', 'phone')->first())->description ?? '')));
+    $contactEmail = trim(strip_tags((string) (optional(\App\Models\Content::where('name', 'email')->first())->description ?? '')));
+    $contactDescription = 'Contact ' . $contactSiteName . ' for enquiries, hiring support, and questions. Find our contact details and send our team a message.';
+@endphp
+
+@section('title', $contactPageTitle . ' | ' . $contactSiteName)
+@section('meta_description', $contactDescription)
+@section('canonical_url', url('/contact'))
+
 @push('meta')
-<meta name="description" content="{{\App\Models\Content::where('name', 'email')->first()->description}}">
+<script type="application/ld+json">@json(array_filter([
+    '@context' => 'https://schema.org',
+    '@type' => 'ContactPage',
+    'name' => $contactPageTitle,
+    'description' => $contactDescription,
+    'url' => url('/contact'),
+    'mainEntity' => array_filter([
+        '@type' => 'Organization',
+        'name' => $contactSiteName,
+        'address' => $contactAddress !== '' ? $contactAddress : null,
+        'telephone' => $contactPhone !== '' ? $contactPhone : null,
+        'email' => $contactEmail !== '' ? $contactEmail : null,
+    ], fn ($value) => $value !== null && $value !== ''),
+], fn ($value) => $value !== null && $value !== ''), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
 @endpush
 
 @section('container')
@@ -12,7 +38,7 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
-                        <h2>{!! \App\Models\Content::where('name', 'title_contact_hero')->first()->description !!}</h2>
+                        <h1 class="contact-page-title">{!! \App\Models\Content::where('name', 'title_contact_hero')->first()->description !!}</h1>
                     </div>
                 </div>
             </div>
@@ -42,22 +68,22 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <textarea required class="form-control w-100" name="message" id="message" cols="30" rows="7" placeholder="Enter Message"></textarea>
+                                    <textarea required class="form-control w-100" name="message" id="message" cols="30" rows="7" placeholder="Enter Message" aria-label="Your message"></textarea>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <input required class="form-control valid" name="name" id="name" type="text" placeholder="Enter your name">
+                                    <input required class="form-control valid" name="name" id="name" type="text" placeholder="Enter your name" autocomplete="name" aria-label="Your name">
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <input required class="form-control valid" name="email" id="email" type="email" placeholder="Email">
+                                    <input required class="form-control valid" name="email" id="email" type="email" placeholder="Email" autocomplete="email" aria-label="Your email address">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <input required class="form-control" name="subject" id="subject" type="text" placeholder="Enter Subject">
+                                    <input required class="form-control" name="subject" id="subject" type="text" placeholder="Enter Subject" aria-label="Message subject">
                                 </div>
                             </div>
                         </div>
@@ -71,7 +97,7 @@
             <div class="col-lg-5">
                 <div class="contact-side-card">
                     <div class="map-wrap">
-                        <iframe height="260" width="100%" style="border:0; border-radius: 18px;" src="https://maps.google.com/maps?q={{\App\Models\Content::where('name', 'map_location')->first()->description}}&output=embed" loading="lazy"></iframe>
+                        <iframe height="260" width="100%" style="border:0; border-radius: 18px;" src="https://maps.google.com/maps?q={{ urlencode((string) (optional(\App\Models\Content::where('name', 'map_location')->first())->description ?? '')) }}&output=embed" title="Map showing {{ $contactSiteName }} location" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
 
                     <div class="contact-info-list">
