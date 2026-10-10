@@ -112,7 +112,10 @@ Route::get('/', function(){
     return appendHomepageAjaxStateScript(view('homepage.index',['jobs'=>$jobs->paginate(5),'count_job'=>$jobs->count()])->render());
 });
 Route::get('/home', fn()=>redirect('/'));
-Route::get('/job/{id_job}', function ($id) {\n    $job = Job::query()->with(['company', 'jobcategory', 'location'])->where('status', 'active')->findOrFail($id);\n    return view('homepage.job_detail', ['job' => $job, 'id' => $job->id]);\n})->whereNumber('id_job')->name('public.jobs.show');
+Route::get('/job/{id_job}', function ($id) {
+    $job = Job::query()->with(['company', 'jobcategory', 'location'])->where('status', 'active')->findOrFail($id);
+    return view('homepage.job_detail', ['job' => $job, 'id' => $job->id]);
+})->whereNumber('id_job')->name('public.jobs.show');
 Route::post('/jobs', function(Request $request){
     insertVisitor(getUserIpAddr(), '/jobs'); $jobs=activeJobsQuery();
     if($request->filled('search')){$search=$request->search;$jobs->where(function($q)use($search){$q->where('title','like',"%{$search}%")->orWhere('type','like',"%{$search}%")->orWhere('salary','like',"%{$search}%")->orWhere('description','like',"%{$search}%")->orWhereHas('jobcategory',fn($q)=>$q->where('name','like',"%{$search}%"));});}
