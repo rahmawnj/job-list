@@ -1,7 +1,25 @@
 @extends('homepage._layout.main')
 
+@php
+    $aboutTextForSeo = trim(\Illuminate\Support\Str::limit(strip_tags((string) (optional(\App\Models\Content::where('name', 'about')->first())->description ?? 'Learn about our team and our approach to connecting talent with career opportunities.')), 155, '...'));
+    $aboutPageTitle = trim((string) (optional(\App\Models\Content::where('name', 'title_about_hero')->first())->description ?? 'About Us'));
+    $aboutSiteName = trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting'));
+@endphp
+
+@section('title', $aboutPageTitle . ' | ' . $aboutSiteName)
+@section('meta_description', $aboutTextForSeo)
+@section('canonical_url', url('/about'))
+@section('meta_image', asset('storage/' . (optional(\App\Models\Content::where('name', 'about_image')->first())->description ?? '')))
+
 @push('meta')
-<meta name="description" content="{!! \App\Models\Content::where('name', 'about')->first()->description !!}">
+<script type="application/ld+json">@json([
+    '@context' => 'https://schema.org',
+    '@type' => 'AboutPage',
+    'name' => $aboutPageTitle,
+    'description' => $aboutTextForSeo,
+    'url' => url('/about'),
+    'isPartOf' => ['@type' => 'WebSite', 'name' => $aboutSiteName, 'url' => url('/')],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
 @endpush
 
 @section('container')
@@ -12,7 +30,7 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
-                        <h2>{!! \App\Models\Content::where('name', 'title_about_hero')->first()->description !!}</h2>
+                        <h1 class="about-page-title">{!! \App\Models\Content::where('name', 'title_about_hero')->first()->description !!}</h1>
                         
                         <!-- Teks Ajakan & Social Media -->
                         <div class="mt-4">
@@ -41,13 +59,13 @@
                 <div class="row align-items-center g-4">
                     <div class="col-lg-5">
                         <div class="about-image-wrap">
-                            <img src="{{ asset('storage/' . \App\Models\Content::where('name', 'about_image')->first()->description) }}" alt="About us image" class="img-fluid">
+                            <img src="{{ asset('storage/' . \App\Models\Content::where('name', 'about_image')->first()->description) }}" alt="About {{ $aboutSiteName }}" class="img-fluid" loading="lazy" decoding="async">
                         </div>
                     </div>
                     <div class="col-lg-7">
                         <div class="about-content">
                             <span class="section-kicker">About</span>
-                            <h3 class="about-heading">Who We Are</h3>
+                            <h2 class="about-heading">Who We Are</h2>
                             <div class="about-text">
                                 {!! \App\Models\Content::where('name', 'about')->first()->description !!}
                             </div>
@@ -61,6 +79,7 @@
     @include('homepage._partials.apply_process')
 
     <style>
+        .about-page-title { color:#fff; font-size:clamp(30px,4vw,48px); font-weight:700; line-height:1.2; margin:0; }
         .about-page {
             background: white;
             padding: 76px 0 34px;
