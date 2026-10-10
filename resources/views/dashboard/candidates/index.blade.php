@@ -24,7 +24,7 @@
 
                 <div class="panel-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-bordered align-middle">
+                        <table id="data-table-candidates" class="table table-striped table-bordered align-middle w-100">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -92,7 +92,7 @@
                                         </td>
                                         <td>
                                             <a href="/dashboard/candidates/{{ $candidate->id }}/edit" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                            <a href="{{ route('admin.candidates.show', $candidate) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+                                            <a href="{{ route('admin.dashboard.candidates.show', $candidate) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
                                             <form action="/dashboard/candidates/{{ $candidate->id }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
