@@ -38,74 +38,7 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse ($candidates as $candidate)
-                                    @php
-                                        $jobsApplied = $candidate->jobCandidates;
-                                        $latestJobCandidate = $jobsApplied->sortByDesc('created_at')->first();
-                                        $latestMilestone = $latestJobCandidate?->milestones->sortByDesc('date')->first();
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $candidate->name }}</td>
-                                        <td>{{ $candidate->email ?? '-' }}</td>
-                                        <td>{{ $candidate->phone ?? '-' }}</td>
-                                        <td>
-                                            @if($jobsApplied->isNotEmpty())
-                                                <div class="d-flex flex-column gap-1">
-                                                    @foreach($jobsApplied as $jobCandidate)
-                                                        <div>
-                                                            <a href="{{ route('admin.job.candidates', $jobCandidate->job_id) }}" class="text-primary">
-                                                                {{ optional($jobCandidate->job)->title ?? 'Unknown Job' }}
-                                                            </a>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($latestMilestone)
-                                                <div>{{ str_replace('_', ' ', ucfirst($latestMilestone->step)) }}</div>
-                                                <small class="text-muted">{{ $latestMilestone->date ? \Carbon\Carbon::parse($latestMilestone->date)->format('d-m-Y') : '-' }}</small>
-                                            @elseif($latestJobCandidate)
-                                                <div>{{ str_replace('_', ' ', ucfirst($latestJobCandidate->step)) }}</div>
-                                                <small class="text-muted">{{ $latestJobCandidate->date ? \Carbon\Carbon::parse($latestJobCandidate->date)->format('d-m-Y') : '-' }}</small>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($candidate->linkedin_url)
-                                                <a href="{{ $candidate->linkedin_url }}" target="_blank">Open</a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($candidate->cv_url)
-                                                <a href="{{ $candidate->cv_url }}" target="_blank">Open</a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="/dashboard/candidates/{{ $candidate->id }}/edit" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                            <a href="/dashboard/candidates/{{ $candidate->id }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
-                                            <form action="/dashboard/candidates/{{ $candidate->id }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this candidate?')"><i class="fa fa-trash"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="text-center">No candidate data yet.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
+                            <tbody></tbody>                    </tbody>
                         </table>
                     </div>
                 </div>
@@ -123,15 +56,125 @@ $(function () {
         return;
     }
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[character];
+        });
+    }
+
     $('#data-table-candidates').DataTable({
+        processing: true,
+        serverSide: true,
+        searching: true,
         responsive: true,
         autoWidth: false,
+        ajax: {
+            url: '/dashboard/candidates',
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            error: function (xhr) {
+                console.error('Candidates DataTables AJAX error', xhr.status, xhr.responseText);
+            }
+        },
+        columns: [
+            {
+                data: 'no',
+                name: 'id',
+                searchable: false,
+                className: 'fw-bold text-inverse',
+                width: '1%'
+            },
+            {
+                data: 'name',
+                name: 'name',
+                render: function (data, type) {
+                    return type === 'display' ? escapeHtml(data || '-') : (data || '');
+                }
+            },
+            {
+                data: 'email',
+                name: 'email',
+                render: function (data, type) {
+                    return type === 'display' ? escapeHtml(data || '-') : (data || '');
+                }
+            },
+            {
+                data: 'phone',
+                name: 'phone',
+                render: function (data, type) {
+                    return type === 'display' ? escapeHtml(data || '-') : (data || '');
+                }
+            },
+            {
+                data: 'jobs',
+                name: 'jobs',
+                orderable: false,
+                render: function (jobs, type) {
+                    if (type !== 'display') {
+                        return (jobs || []).map(function (job) { return job.title; }).join(' ');
+                    }
+                    if (!jobs || !jobs.length) return '-';
+                    return '<div class="d-flex flex-column gap-1">' + jobs.map(function (job) {
+                        return '<div><a class="text-primary" href="' + escapeHtml(job.url) + '">' +
+                            escapeHtml(job.title) + '</a></div>';
+                    }).join('') + '</div>';
+                }
+            },
+            {
+                data: 'latest_milestone',
+                name: 'latest_milestone',
+                orderable: false,
+                render: function (data, type) {
+                    return type === 'display' ? escapeHtml(data || '-') : (data || '');
+                }
+            },
+            {
+                data: 'linkedin_url',
+                name: 'linkedin_url',
+                orderable: false,
+                render: function (data, type) {
+                    if (!data) return '-';
+                    return type === 'display'
+                        ? '<a href="' + escapeHtml(data) + '" target="_blank" rel="noopener noreferrer">Open</a>'
+                        : data;
+                }
+            },
+            {
+                data: 'cv_url',
+                name: 'cv_url',
+                orderable: false,
+                render: function (data, type) {
+                    if (!data) return '-';
+                    return type === 'display'
+                        ? '<a href="' + escapeHtml(data) + '" target="_blank" rel="noopener noreferrer">Open</a>'
+                        : data;
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    if (type !== 'display') return '';
+                    return '<a href="' + escapeHtml(row.edit_url) + '" class="btn btn-warning btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ' +
+                        '<a href="' + escapeHtml(row.show_url) + '" class="btn btn-info btn-sm" title="Detail"><i class="fa fa-eye"></i></a> ' +
+                        '<form action="' + escapeHtml(row.delete_url) + '" method="POST" class="d-inline btn-del-form">' +
+                            '<input type="hidden" name="_token" value="' + escapeHtml($('meta[name="csrf-token"]').attr('content')) + '">' +
+                            '<input type="hidden" name="_method" value="DELETE">' +
+                            '<button type="submit" class="btn btn-danger btn-sm" title="Delete"><i class="fa fa-trash"></i></button>' +
+                        '</form>';
+                }
+            }
+        ],
+        order: [[0, 'desc']],
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
-        order: [[1, 'asc']],
-        columnDefs: [
-            { targets: [0, 8], orderable: false, searchable: false }
-        ],
         language: {
             processing: 'Memuat...',
             search: 'Cari:',
@@ -141,12 +184,25 @@ $(function () {
             infoFiltered: '(difilter dari _MAX_ total kandidat)',
             zeroRecords: 'Kandidat tidak ditemukan',
             emptyTable: 'Belum ada data kandidat',
-            paginate: {
-                first: 'Pertama',
-                last: 'Terakhir',
-                next: 'Berikutnya',
-                previous: 'Sebelumnya'
-            }
+            paginate: { first: 'Pertama', last: 'Terakhir', next: 'Berikutnya', previous: 'Sebelumnya' }
+        }
+    });
+
+    $('#data-table-candidates').on('submit', '.btn-del-form', function (e) {
+        e.preventDefault();
+        var form = this;
+        if (typeof swal === 'function') {
+            swal({
+                title: 'Peringatan!',
+                text: 'Yakin akan menghapus kandidat ini?',
+                icon: 'warning',
+                buttons: true,
+                dangerMode: true
+            }).then(function (confirmed) {
+                if (confirmed) form.submit();
+            });
+        } else if (confirm('Yakin akan menghapus kandidat ini?')) {
+            form.submit();
         }
     });
 });
