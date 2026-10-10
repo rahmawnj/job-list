@@ -113,3 +113,42 @@
         </div>
     </div>
 @endsection
+
+
+@push('scripts')
+<script>
+$(function () {
+    if (!$.fn.DataTable) {
+        console.error('DataTables library belum dimuat.');
+        return;
+    }
+
+    $('#data-table-candidates').DataTable({
+        responsive: true,
+        autoWidth: false,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[1, 'asc']],
+        columnDefs: [
+            { targets: [0, 8], orderable: false, searchable: false }
+        ],
+        language: {
+            processing: 'Memuat...',
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ kandidat',
+            infoEmpty: 'Menampilkan 0 kandidat',
+            infoFiltered: '(difilter dari _MAX_ total kandidat)',
+            zeroRecords: 'Kandidat tidak ditemukan',
+            emptyTable: 'Belum ada data kandidat',
+            paginate: {
+                first: 'Pertama',
+                last: 'Terakhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
+        }
+    });
+});
+</script>
+@endpush
