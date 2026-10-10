@@ -16,13 +16,14 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="hero-cap text-center">
-                        <h2>{!! \App\Models\Content::where('name', 'title_jobs_hero')->first()->description !!}</h2>
+                        <h1 class="jobs-page-title">{!! \App\Models\Content::where('name', 'title_jobs_hero')->first()->description !!}</h1>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<style>.jobs-page-title{font-size:clamp(28px,4vw,42px);line-height:1.2;font-weight:700;margin:0}</style>
 <!-- Hero Area End -->
 <!-- Job List Area Start -->
 <div class="job-listing-area pt-120 pb-120">
