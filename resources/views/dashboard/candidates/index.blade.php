@@ -92,7 +92,7 @@
                                         </td>
                                         <td>
                                             <a href="/dashboard/candidates/{{ $candidate->id }}/edit" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                            <a href="{{ route('admin.dashboard.candidates.show', $candidate) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+                                            <a href="/dashboard/candidates/{{ $candidate->id }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
                                             <form action="/dashboard/candidates/{{ $candidate->id }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
