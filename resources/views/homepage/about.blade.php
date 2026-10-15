@@ -1,7 +1,8 @@
 @extends('homepage._layout.main')
 
 @php
-    $aboutTextForSeo = trim(\Illuminate\Support\Str::limit(strip_tags((string) (optional(\App\Models\Content::where('name', 'about')->first())->description ?? 'Learn about our team and our approach to connecting talent with career opportunities.')), 155, '...'));
+    $aboutContent = \App\Models\Content::where('name', 'about')->first();
+    $aboutTextForSeo = trim(\Illuminate\Support\Str::limit(strip_tags((string) ($aboutContent->description ?? 'Learn about our team and our approach to connecting talent with career opportunities.')), 155, '...'));
     $aboutPageTitle = trim((string) (optional(\App\Models\Content::where('name', 'title_about_hero')->first())->description ?? 'About Us'));
     $aboutSiteName = trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting'));
 @endphp
