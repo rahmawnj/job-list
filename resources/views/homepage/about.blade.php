@@ -5,6 +5,18 @@
     $aboutTextForSeo = trim(\Illuminate\Support\Str::limit(strip_tags((string) ($aboutContent->description ?? 'Learn about our team and our approach to connecting talent with career opportunities.')), 155, '...'));
     $aboutPageTitle = trim((string) (optional(\App\Models\Content::where('name', 'title_about_hero')->first())->description ?? 'About Us'));
     $aboutSiteName = trim((string) (optional(\App\Models\Content::where('name', 'name')->first())->description ?? 'Top Talents Consulting'));
+    $aboutSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'AboutPage',
+        'name' => $aboutPageTitle,
+        'description' => $aboutTextForSeo,
+        'url' => url('/about'),
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            'name' => $aboutSiteName,
+            'url' => url('/'),
+        ],
+    ];
 @endphp
 
 @section('title', $aboutPageTitle . ' | ' . $aboutSiteName)
@@ -13,14 +25,7 @@
 @section('meta_image', asset('storage/' . (optional(\App\Models\Content::where('name', 'about_image')->first())->description ?? '')))
 
 @push('meta')
-<script type="application/ld+json">@json([
-    '@context' => 'https://schema.org',
-    '@type' => 'AboutPage',
-    'name' => $aboutPageTitle,
-    'description' => $aboutTextForSeo,
-    'url' => url('/about'),
-    'isPartOf' => ['@type' => 'WebSite', 'name' => $aboutSiteName, 'url' => url('/')],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
+<script type="application/ld+json">@json($aboutSchema)</script>
 @endpush
 
 @section('container')
