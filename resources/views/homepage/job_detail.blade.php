@@ -1,6 +1,7 @@
 @extends('homepage._layout.main')
 
 @php
+    $jobPostedDate = $job->updated_at ?: $job->created_at;
     $jobDescriptionText = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($job->description ?? ''))));
     $jobMetaDescription = \Illuminate\Support\Str::limit(
         $jobDescriptionText !== '' ? $jobDescriptionText : ('Explore the ' . $job->title . ' vacancy at ' . (optional($job->company)->name ?? 'our hiring partner') . '.'),
@@ -23,7 +24,7 @@
         '@type' => 'JobPosting',
         'title' => (string) $job->title,
         'description' => $jobDescriptionText !== '' ? $jobDescriptionText : (string) $job->title,
-        'datePosted' => optional($job->created_at)->toDateString(),
+        'datePosted' => optional($jobPostedDate)->toDateString(),
         'hiringOrganization' => array_filter([
             '@type' => 'Organization',
             'name' => optional($job->company)->name,
@@ -570,7 +571,7 @@
                     <ul>
                         <li>
                             <span class="overview-label">Posted date:</span>
-                            <span class="overview-value">{{\Carbon\Carbon::parse($job->created_at)->format('d M Y')}}</span>
+                            <span class="overview-value">{{\Carbon\Carbon::parse($jobPostedDate)->format('d M Y')}}</span>
                         </li>
                         <li>
                             <span class="overview-label">Location:</span>
