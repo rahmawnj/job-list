@@ -7,6 +7,20 @@
     $contactPhone = trim(strip_tags((string) (optional(\App\Models\Content::where('name', 'phone')->first())->description ?? '')));
     $contactEmail = trim(strip_tags((string) (optional(\App\Models\Content::where('name', 'email')->first())->description ?? '')));
     $contactDescription = 'Contact ' . $contactSiteName . ' for enquiries, hiring support, and questions. Find our contact details and send our team a message.';
+    $contactSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'ContactPage',
+        'name' => $contactPageTitle,
+        'description' => $contactDescription,
+        'url' => url('/contact'),
+        'mainEntity' => array_filter([
+            '@type' => 'Organization',
+            'name' => $contactSiteName,
+            'address' => $contactAddress !== '' ? $contactAddress : null,
+            'telephone' => $contactPhone !== '' ? $contactPhone : null,
+            'email' => $contactEmail !== '' ? $contactEmail : null,
+        ], fn ($value) => $value !== null && $value !== ''),
+    ];
 @endphp
 
 @section('title', $contactPageTitle . ' | ' . $contactSiteName)
@@ -14,20 +28,7 @@
 @section('canonical_url', url('/contact'))
 
 @push('meta')
-<script type="application/ld+json">@json(array_filter([
-    '@context' => 'https://schema.org',
-    '@type' => 'ContactPage',
-    'name' => $contactPageTitle,
-    'description' => $contactDescription,
-    'url' => url('/contact'),
-    'mainEntity' => array_filter([
-        '@type' => 'Organization',
-        'name' => $contactSiteName,
-        'address' => $contactAddress !== '' ? $contactAddress : null,
-        'telephone' => $contactPhone !== '' ? $contactPhone : null,
-        'email' => $contactEmail !== '' ? $contactEmail : null,
-    ], fn ($value) => $value !== null && $value !== ''),
-], fn ($value) => $value !== null && $value !== ''), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
+<script type="application/ld+json">@json($contactSchema)</script>
 @endpush
 
 @section('container')
